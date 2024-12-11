@@ -1,0 +1,33 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@using System.Runtime.InteropServices
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Snek</PageTitle>
+
+<div class="position-relative">
+	<div class="d-flex justify-content-center">
+		<div>
+			@if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
+			{
+				<UIGrid />
+			}
+			else
+			{
+				<div style="filter: blur(3px)">
+					<UIGridLoading />
+				</div>
+				<div class=" position-absolute top-50 start-50">
+					<div class="spinner-border custom-spinner" role="status">
+						<span class="sr-only" style="font-size: 28px; color:white">Loading</span>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+
+@code {
+}

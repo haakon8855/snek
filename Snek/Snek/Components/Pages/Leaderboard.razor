@@ -1,0 +1,44 @@
+﻿@page "/best-sneks"
+@attribute [Authorize]
+@attribute [StreamRendering]
+@inject GameService gameService;
+
+@using Snek.Services
+
+<h3>Best sneks</h3>
+
+@if (scores.Count == 0) {
+<p><em>Loading...</em></p>
+} else {
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Rank</th>
+			<th>Name</th>
+			<th>Score</th>
+		</tr>
+	</thead>
+	<tbody>
+		@for (int i = 0; i < scores.Count(); i++)
+		{
+			<tr>
+				<td>@(i+1)</td>
+				<td>@scores[i].User.UserName</td>
+				<td>@scores[i].Points</td>
+			</tr>
+		}
+	</tbody>
+</table>
+	}
+
+
+	@code {
+		private List<Score> scores = new List<Score>();
+
+		protected override async Task OnInitializedAsync()
+		{
+			scores = await gameService.GetTopScores(10);
+		}
+
+	}
