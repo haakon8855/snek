@@ -1,44 +1,53 @@
 ﻿@page "/best-sneks"
 @attribute [Authorize]
 @attribute [StreamRendering]
-@inject GameService gameService;
+@inject GameService GameService;
 
 @using Snek.Services
 
 <h3>Best sneks</h3>
 
-@if (scores.Count == 0) {
-<p><em>Loading...</em></p>
-} else {
-
-<table class="table">
-	<thead>
+@if (_scores is null)
+{
+	<p><em>Loading...</em></p>
+}
+else if (_scores.Count == 0)
+{
+	<p>No highsneks yet :(</p>
+}
+else
+{
+	<table class="table">
+		<thead>
 		<tr>
 			<th>Rank</th>
 			<th>Name</th>
 			<th>Score</th>
+			<th>Time</th>
 		</tr>
-	</thead>
-	<tbody>
-		@for (int i = 0; i < scores.Count(); i++)
-		{
-			<tr>
-				<td>@(i+1)</td>
-				<td>@scores[i].User.UserName</td>
-				<td>@scores[i].Points</td>
+		</thead>
+		<tbody>
+		@for (int i = 0; i < _scores.Count(); i++)
+	{
+		<tr>
+		<td>@(i + 1)</td>
+		<td>@_scores[i].User.UserName</td>
+		<td>@_scores[i].Points</td>
+		<td>@_scores[i].Timestamp.ToShortDateString() @_scores[i].Timestamp.ToShortTimeString()</td>
 			</tr>
 		}
-	</tbody>
-</table>
+		</tbody>
+	</table>
+}
+
+
+@code {
+	
+	private List<Score>? _scores;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_scores = await GameService.GetTopScores(10);
 	}
 
-
-	@code {
-		private List<Score> scores = new List<Score>();
-
-		protected override async Task OnInitializedAsync()
-		{
-			scores = await gameService.GetTopScores(10);
-		}
-
-	}
+}

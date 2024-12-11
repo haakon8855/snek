@@ -7,6 +7,7 @@
 		public required int Points { get; set; }
 
 		public required ApplicationUser User { get; set; }
-
+		
+		public DateTime Timestamp { get; set; }
 	}
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,8 @@ using Snek.Components.Account;
 using Snek.Data;
 using Snek.Repositories;
 using Snek.Services;
+
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("nb-NO");
 
 var builder = WebApplication.CreateBuilder(args);
 

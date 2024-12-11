@@ -125,7 +125,7 @@
         // If the user does not have an account, then ask the user to create an account.
         if (externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Name))
         {
-            Input.UserName = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.GivenName).Replace(" ", "") ?? "";
+            Input.UserName = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.GivenName)?.Replace(" ", "") ?? "";
         }
 
         if (externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email))

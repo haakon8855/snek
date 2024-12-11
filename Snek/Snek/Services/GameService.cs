@@ -39,10 +39,11 @@ namespace Snek.Services
             Score score = new Score
             {
                 User = user,
-                Points = points
+                Points = points,
+                Timestamp = DateTime.Now
             };
 
-            if (score == null || score.Points < 0)
+            if (score.Points < 0)
                 return ScoreSubmitResult.Failure;
 
             var currentHiScore = await _gameRepository.GetScoreByUser(user);
