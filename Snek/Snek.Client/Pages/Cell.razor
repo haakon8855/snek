@@ -1,16 +1,13 @@
-﻿<span id="@(Row + '-' + Col)" class="snek-cell @ExtraCss"></span>
+﻿<span id="@(Row + '-' + Col)" class="snek-cell @_extraCss"></span>
 
 @code {
-    [Parameter]
-    public int Row { get; set; }
-    [Parameter]
-    public int Col { get; set; }
-    [Parameter]
-    public CellsType Value { get; set; }
-    [Parameter]
-    public Direction SnekDirection { get; set; }
 
-    private string ExtraCss = "";
+    [Parameter] public int Row { get; set; }
+    [Parameter] public int Col { get; set; }
+    [Parameter] public CellsType Value { get; set; }
+    [Parameter] public Direction SnekDirection { get; set; }
+
+    private string _extraCss = "";
 
     protected override void OnParametersSet()
     {
@@ -19,17 +16,18 @@
         {
             case CellsType.SnekHead:
                 string rotationDir = SnekDirection.ToString();
-                ExtraCss = $"snek-cell-head snek-head-{rotationDir.ToLower()}";
+                _extraCss = $"snek-cell-head snek-head-{rotationDir.ToLower()}";
                 break;
             case CellsType.Snek:
-                ExtraCss = "snek-cell-snek";
+                _extraCss = "snek-cell-snek";
                 break;
             case CellsType.Food:
-                ExtraCss = "snek-cell-food";
+                _extraCss = "snek-cell-food";
                 break;
             default:
-                ExtraCss = "snek-cell-empty";
+                _extraCss = "snek-cell-empty";
                 break;
         }
     }
+
 }

@@ -1,24 +1,18 @@
-﻿@using Snek.Client.SnekLogic
-@using System.Windows
-@using Microsoft.JSInterop
-@using Microsoft.AspNetCore.Components.Web
-@using Snek.Client.Services
-@rendermode InteractiveServer
-@inject IConfiguration conf;
+﻿@rendermode InteractiveServer
+@inject IConfiguration Configuration;
 <div>
-	<h2>Snekpoeng: @Game.Score</h2>
-	<h2>@ClientId</h2>
+	<h2>Snekpoeng: @_game.Score</h2>
 
 	<div style="background-color: black;">
-		@for (int i = 0; i < Game.Grid.Length; i++)
+		@for (int i = 0; i < _game.Grid.Length; i++)
 		{
 			<div class="snek-row">
-				@for (int j = 0; j < Game.Grid[0].Length; j++)
+				@for (int j = 0; j < _game.Grid[0].Length; j++)
 				{
 					<Cell
 						Row="@i"
 						Col="@j"
-						Value="@Game.Grid[i][j]"
+						Value="@_game.Grid[i][j]"
 						SnekDirection="@Direction.Down"
 					/>
 				}
@@ -28,14 +22,7 @@
 </div>
 
 @code {
-	string ClientId;
 
-	protected override async Task OnInitializedAsync()
-	{
-        ClientId = conf["Authentication:Google:ClientId"];
-        string ClientSecret = conf["Authentication:Google:ClientSecret"];
-	}
-
-	private Game Game = new Game();
+	private Game _game = new();
 	
 }

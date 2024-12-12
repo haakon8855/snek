@@ -1,8 +1,4 @@
-﻿@using Snek.Client.SnekLogic
-@using System.Windows
-@using Microsoft.JSInterop
-@using Microsoft.AspNetCore.Components.Web
-@using System.Text.Json
+﻿@using System.Text.Json
 @using Snek.Client.Services
 @using System.Net
 
@@ -46,7 +42,7 @@
 			@if (_scoreResponseCode == HttpStatusCode.BadRequest)
 			{
 				<h3 class="text-white">Juks og fanteri!</h3>
-				<h4 class="text-white">Spill spillet selv for å få highsnek på lista</h4>
+				<h4 class="text-white">Spill spillet alene for å få highsnek på lista</h4>
 			}
 			<button class="btn btn-primary" @onclick="ResetGame">Reset</button>
 		</div>
@@ -96,7 +92,7 @@
 		}
 	}
 
-	public void ResetGame()
+	private void ResetGame()
 	{
 		_gameOver = false;
 		_timerStarted = false;
@@ -108,8 +104,8 @@
 	{
 		var keyList = JsonSerializer.Deserialize<List<string>>(keys);
 
-		Direction requestedSnekDirection = _game.CurrentSnekDirection;
-		Direction requestedFoodDirection = _game.CurrentFoodDirection;
+		var requestedSnekDirection = _game.CurrentSnekDirection;
+		var requestedFoodDirection = _game.CurrentFoodDirection;
 
 		foreach (string key in keyList)
 		{

@@ -293,7 +293,7 @@ public class Game
         var sha256 = SHA256.Create();
         var serializedReplay = JsonSerializer.Serialize(replay);
         byte[] dataBytes = Encoding.UTF8.GetBytes(serializedReplay + "Nei, dette går ikke!");
-        byte[] hashedBytes = sha256.ConputeHash(dataBytes);
+        byte[] hashedBytes = FoodLogic.ComputeHash(sha256, dataBytes);
         string hashedString = Convert.ToBase64String(hashedBytes);
 
         return JsonContent.Create(new HighScoreDTO { Replay = replay, Checksum = hashedString });

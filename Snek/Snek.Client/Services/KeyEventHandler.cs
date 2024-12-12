@@ -4,10 +4,10 @@ using System.Text.Json;
 
 namespace Snek.Client.Services;
 
-public class KeyEventHandler
+public static class KeyEventHandler
 {
-	public static List<string> KeyboardEvent { get; set; } = new();
-	public static List<IKeyEventListener> KeyEventListeners = new();
+	private static List<string> KeyboardEvent { get; } = new();
+	private static readonly List<IKeyEventListener> KeyEventListeners = new();
 
 	[JSInvokable("JsKeyDown")]
 	public static void JsKeyDown(KeyboardEventArgs e)
