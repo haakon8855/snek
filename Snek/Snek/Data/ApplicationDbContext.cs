@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Snek.Data
-{
-	public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
-	{
-		public DbSet<Score> Scores { get; set; } = default!;
-	}
+namespace Snek.Data;
 
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+{
+	public DbSet<Score> Scores { get; set; } = default!;
 }

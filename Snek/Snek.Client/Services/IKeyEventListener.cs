@@ -2,5 +2,5 @@
 
 public interface IKeyEventListener
 {
-	public void KeyEventChanged(string keys);
+	public Task KeyEventChanged(string keys);
 }

@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Snek.Data
-{
-	// Add profile data for application users by adding properties to the ApplicationUser class
-	public class ApplicationUser : IdentityUser
-	{
-	}
+namespace Snek.Data;
 
+// Add profile data for application users by adding properties to the ApplicationUser class
+public class ApplicationUser : IdentityUser
+{
 }

@@ -292,7 +292,7 @@ public class Game
     {
         var sha256 = SHA256.Create();
         var serializedReplay = JsonSerializer.Serialize(replay);
-        byte[] dataBytes = Encoding.UTF8.GetBytes(serializedReplay + "Nei Jo9, dette går ikke!");
+        byte[] dataBytes = Encoding.UTF8.GetBytes(serializedReplay + "Nei, dette går ikke!");
         byte[] hashedBytes = sha256.ConputeHash(dataBytes);
         string hashedString = Convert.ToBase64String(hashedBytes);
 

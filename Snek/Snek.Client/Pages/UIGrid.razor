@@ -6,77 +6,83 @@
 @using Snek.Client.Services
 @using System.Net
 
-@inject IHttpClientFactory httpClientFactory;
+@inject IHttpClientFactory HttpClientFactory;
 @implements IKeyEventListener
 @rendermode InteractiveWebAssembly
 
 <div>
 	<div class="d-flex justify-content-between">
-        <h2>Snekpoeng: @Game.Score</h2>
+        <h2>Snekpoeng: @_game.Score</h2>
 		<div class="p-2">
             <label for="toggleMusic" class="fw-bold px-2">Music</label>
-            <input id="toggleMusic" type="checkbox" @bind="enableMusic"/>
+            <input id="toggleMusic" type="checkbox" @bind="_enableMusic"/>
 		</div>
 	</div>
-	@if (playMusic)
+	@if (_playMusic)
 	{
-		<audio id="musicPlayer" autoplay muted=@playMusic><source src="assets/music.mp3" /></audio>
+		<audio id="musicPlayer" autoplay muted=@_playMusic><source src="assets/music.mp3" /></audio>
 		<script>document.getElementById('musicPlayer').volume = 0.2</script>
 	}
 
 	<div style="background-color: black;">
-		@for (int i = 0; i < Game.Grid.Length; i++)
+		@for (int i = 0; i < _game.Grid.Length; i++)
 		{
 			<div class="snek-row">
-				@for (int j = 0; j < Game.Grid[0].Length; j++)
+				@for (int j = 0; j < _game.Grid[0].Length; j++)
 				{
 					<Cell
 						Row="@i"
 						Col="@j"
-						Value="@Game.Grid[i][j]"
-						SnekDirection="@Game.CurrentSnekDirection" />
+						Value="@_game.Grid[i][j]"
+						SnekDirection="@_game.CurrentSnekDirection" />
 				}
 			</div>
 		}
 	</div>
-	@if (gameOver)
+	@if (_gameOver)
 	{
 		<div class="position-absolute top-50 start-50 translate-middle text-center">
 			<h1 class="text-white">Game Over</h1>
+			@if (_scoreResponseCode == HttpStatusCode.BadRequest)
+			{
+				<h3 class="text-white">Juks og fanteri!</h3>
+				<h4 class="text-white">Spill spillet selv for å få highsnek på lista</h4>
+			}
 			<button class="btn btn-primary" @onclick="ResetGame">Reset</button>
 		</div>
 	}
 </div>
 
 @code {
-	private Game Game;
+	private Game _game;
 	private PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(75));
-	private bool gameOver = false;
-	private bool timerStarted = false;
-	private bool enableMusic = true;
-	private bool playMusic = false;
-	private HttpStatusCode scoreResponseCode; 
+	private bool _gameOver = false;
+	private bool _timerStarted = false;
+	private bool _enableMusic = true;
+	private bool _playMusic = false;
+	private HttpStatusCode _scoreResponseCode; 
 
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
     {
-		Game = new Game(httpClientFactory);	
+		_game = new Game(HttpClientFactory);	
     }
 
-	public async void InitTimer()
+	private async Task InitTimer()
 	{
-		playMusic = enableMusic;
+		_playMusic = _enableMusic;
 		while (await _timer.WaitForNextTickAsync())
 		{
-			bool validState = Game.Update();
-			gameOver = !validState;
+			bool validState = _game.Update();
+			_gameOver = !validState;
 			if (!validState)
 			{
-				playMusic = false;
+				_playMusic = false;
 			}
 			StateHasChanged();
 			if (!validState)
 			{
-				scoreResponseCode = await Game.GameOver();
+				_scoreResponseCode = await _game.GameOver();
+				StateHasChanged();
 				break;
 			}
 		}
@@ -92,67 +98,67 @@
 
 	public void ResetGame()
 	{
-		gameOver = false;
-		timerStarted = false;
-		Game.Init();
+		_gameOver = false;
+		_timerStarted = false;
+		_game.Init();
 		StateHasChanged();
 	}
 
-	public void KeyEventChanged(string keys)
+	public async Task KeyEventChanged(string keys)
 	{
 		var keyList = JsonSerializer.Deserialize<List<string>>(keys);
 
-		Direction RequestedSnekDirection = Game.CurrentSnekDirection;
-		Direction RequestedFoodDirection = Game.CurrentFoodDirection;
+		Direction requestedSnekDirection = _game.CurrentSnekDirection;
+		Direction requestedFoodDirection = _game.CurrentFoodDirection;
 
 		foreach (string key in keyList)
 		{
 			switch (key)
 			{
 				case "Enter":
-					if (gameOver)
+					if (_gameOver)
 					{
 						ResetGame();
 					}
 					return;
 				case "k":
 				case "ArrowUp":
-					RequestedSnekDirection = Direction.Up;
+					requestedSnekDirection = Direction.Up;
 					break;
 				case "j":
 				case "ArrowDown":
-					RequestedSnekDirection = Direction.Down;
+					requestedSnekDirection = Direction.Down;
 					break;
 				case "h":
 				case "ArrowLeft":
-					RequestedSnekDirection = Direction.Left;
+					requestedSnekDirection = Direction.Left;
 					break;
 				case "l":
 				case "ArrowRight":
-					RequestedSnekDirection = Direction.Right;
+					requestedSnekDirection = Direction.Right;
 					break;
 				case "w":
-					RequestedFoodDirection = Direction.Up;
+					requestedFoodDirection = Direction.Up;
 					break;
 				case "s":
-					RequestedFoodDirection = Direction.Down;
+					requestedFoodDirection = Direction.Down;
 					break;
 				case "a":
-					RequestedFoodDirection = Direction.Left;
+					requestedFoodDirection = Direction.Left;
 					break;
 				case "d":
-					RequestedFoodDirection = Direction.Right;
+					requestedFoodDirection = Direction.Right;
 					break;
 			}
 		}
 
-        Game.ChangeSnekDirection(RequestedSnekDirection);
-        Game.ChangeFoodDirection(RequestedFoodDirection);
+        _game.ChangeSnekDirection(requestedSnekDirection);
+        _game.ChangeFoodDirection(requestedFoodDirection);
 
-        if (!gameOver && !timerStarted)
+        if (!_gameOver && !_timerStarted)
         {
-            InitTimer();
-            timerStarted = true;
+            await InitTimer();
+            _timerStarted = true;
         }
 	}
 }

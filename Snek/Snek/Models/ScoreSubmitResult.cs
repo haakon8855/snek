@@ -1,9 +1,8 @@
-﻿namespace Snek.Models
+﻿namespace Snek.Models;
+
+public enum ScoreSubmitResult
 {
-	public enum ScoreSubmitResult
-	{
-		Failure,
-		NotHighScore,
-		HighScore
-	}
+	Failure,
+	NotHighScore,
+	HighScore
 }
