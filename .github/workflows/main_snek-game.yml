@@ -28,7 +28,7 @@ jobs:
       - name: Generate EF migration script
         run: |
           dotnet tool install --global dotnet-ef
-          dotnet ef migrations script --idempotent --no-build --configuration Release --project ./Snek/Snek/Snek.csproj --output ${{env.DOTNET_ROOT}}/migrations.sql --verbose
+          dotnet ef migrations script --idempotent --no-build --configuration Release --project ./src/Web/Web.csproj --output ${{env.DOTNET_ROOT}}/migrations.sql --verbose
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/snek-app
