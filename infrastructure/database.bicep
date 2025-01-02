@@ -1,6 +1,5 @@
 param location string
-param vnetName string
-param resourceGroupName string
+param vnetSubnetId string
 
 param maxSizeInBytes int
 
@@ -11,7 +10,7 @@ resource sqlServerResource 'Microsoft.Sql/servers@2023-08-01-preview' = {
     administratorLogin: 'serveradmin'
     version: '12.0'
     minimalTlsVersion: '1.2'
-    publicNetworkAccess: 'Disabled'
+    publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
   }
 }
@@ -47,16 +46,11 @@ resource sqlServerDatabaseResource 'Microsoft.Sql/servers/databases@2023-08-01-p
   }
 }
 
-resource vnet 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
-  name: vnetName
-  scope: resourceGroup(resourceGroupName)
-}
-
 resource sqlServerVnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2023-08-01-preview' = {
   parent: sqlServerResource
   name: 'Allow-app-to-reach-dbserver'
   properties: {
-    virtualNetworkSubnetId: vnet.id
+    virtualNetworkSubnetId: vnetSubnetId
     ignoreMissingVnetServiceEndpoint: false
   }
 }

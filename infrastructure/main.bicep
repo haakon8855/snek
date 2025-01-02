@@ -29,8 +29,7 @@ module database 'database.bicep' = {
   scope: resourceGroup
   params: {
     maxSizeInBytes: 2147483648
-    resourceGroupName: resourceGroup.name
-    vnetName: vnet.name
+    vnetSubnetId: vnet.outputs.subnetId
     location: location
   }
 }
