@@ -1,0 +1,23 @@
+name: Infrastructure deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-infra.yml'
+      - 'infrastructure/**'
+  workflow_dispatch:
+
+env:
+  subscription: 'Visual Studio Enterprise Subscription – MPN'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test
+        run: echo "testing"
