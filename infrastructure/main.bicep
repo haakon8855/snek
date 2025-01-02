@@ -9,7 +9,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 }
 
 module vnet 'vnet.bicep' = {
-  name: 'vnet'
+  name: 'snek-vnet'
   scope: resourceGroup
   params: {
     location: location
@@ -17,7 +17,7 @@ module vnet 'vnet.bicep' = {
 }
 
 module appService 'app-service.bicep' = {
-  name: 'appService'
+  name: 'snek-game'
   scope: resourceGroup
   params: {
     location: location
@@ -25,7 +25,7 @@ module appService 'app-service.bicep' = {
 }
 
 module database 'database.bicep' = {
-  name: 'database'
+  name: 'snek-sql'
   scope: resourceGroup
   params: {
     maxSizeInBytes: 2147483648

@@ -1,7 +1,7 @@
 param location string = resourceGroup().location
 
-var appServicePlanName = 'snek-appsvc-plan'
-var appName = 'snek-app'
+var appServicePlanName = 'ASP-snek-acc4'
+var appName = 'snek-game'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName

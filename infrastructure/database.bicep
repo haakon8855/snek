@@ -5,7 +5,7 @@ param resourceGroupName string
 param maxSizeInBytes int
 
 resource sqlServerResource 'Microsoft.Sql/servers@2023-08-01-preview' = {
-  name: 'snek-sql-server'
+  name: 'snek-sql'
   location: location
   properties: {
     administratorLogin: 'serveradmin'
@@ -54,7 +54,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
 
 resource sqlServerVnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2023-08-01-preview' = {
   parent: sqlServerResource
-  name: 'allow-app-to-reach-db-server'
+  name: 'Allow-app-to-reach-dbserver'
   properties: {
     virtualNetworkSubnetId: vnet.id
     ignoreMissingVnetServiceEndpoint: false
