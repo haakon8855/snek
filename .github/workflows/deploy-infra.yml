@@ -9,9 +9,6 @@ on:
       - 'infrastructure/**'
   workflow_dispatch:
 
-env:
-  subscription: 'Visual Studio Enterprise Subscription – MPN'
-
 permissions:
   id-token: write
   contents: read
