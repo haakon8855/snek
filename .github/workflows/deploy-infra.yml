@@ -9,6 +9,9 @@ on:
       - 'infrastructure/**'
   workflow_dispatch:
 
+env:
+  LOCATION: "norwayeast"
+
 permissions:
   id-token: write
   contents: read
@@ -34,3 +37,12 @@ jobs:
         uses: Azure/cli@v2
         with:
           inlinescript: az bicep build --file infrastructure/main.bicep
+
+      - name: Bicep validate
+        uses: Azure/cli@v2
+        with:
+          inlinescript: |
+            az deployment sub validate \
+            --name validate-${{ github.run_id }} \
+            --template-file infrastructure/main.bicep \
+            --location $LOCATION
