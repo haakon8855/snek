@@ -28,12 +28,12 @@ else
 		</thead>
 		<tbody>
 		@for (int i = 0; i < _scores.Count(); i++)
-	{
-		<tr>
-		<td>@(i + 1)</td>
-		<td>@_scores[i].User.UserName</td>
-		<td>@_scores[i].Points</td>
-		<td>@_scores[i].Timestamp.ToShortDateString() @_scores[i].Timestamp.ToShortTimeString()</td>
+		{
+			<tr>
+				<td>@(i + 1)</td>
+				<td>@_scores[i].User.UserName</td>
+				<td>@_scores[i].Points</td>
+				<td>@_scores[i].Timestamp.ToLocalDateString()</td>
 			</tr>
 		}
 		</tbody>
@@ -42,7 +42,7 @@ else
 
 
 @code {
-	
+
 	private List<Score>? _scores;
 
 	protected override async Task OnInitializedAsync()

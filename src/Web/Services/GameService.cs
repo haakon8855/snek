@@ -32,7 +32,7 @@ public class GameService(GameRepository gameRepository)
         {
             User = user,
             Points = points,
-            Timestamp = DateTime.Now
+            Timestamp = DateTime.UtcNow
         };
 
         if (score.Points < 0)
