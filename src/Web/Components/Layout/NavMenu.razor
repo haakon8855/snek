@@ -8,17 +8,17 @@
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Play Snek
             </NavLink>
         </div>
-         
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="best-sneks">
                 <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Best Sneks
@@ -34,8 +34,8 @@
                 </div>
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <AntiforgeryToken/>
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
                         <button type="submit" class="nav-link">
                             <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
                         </button>
@@ -77,5 +77,6 @@
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
+
 }
 

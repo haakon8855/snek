@@ -5,5 +5,5 @@ namespace Web.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-	public DbSet<Score> Scores { get; set; } = default!;
+    public DbSet<Score> Scores { get; set; } = default!;
 }

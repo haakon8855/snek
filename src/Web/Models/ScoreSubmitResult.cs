@@ -2,7 +2,7 @@
 
 public enum ScoreSubmitResult
 {
-	Failure,
-	NotHighScore,
-	HighScore
+    Failure,
+    NotHighScore,
+    HighScore
 }

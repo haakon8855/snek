@@ -6,12 +6,6 @@ namespace Web.Services;
 
 public class GameService(GameRepository gameRepository)
 {
-    public async Task<ApplicationUser> GetApplicationUser(string userId)
-    {
-        return await gameRepository.GetApplicationUser(userId);
-    }
-
-
     public async Task<Score?> GetScoreByUserId(string userId)
     {
         var user = await gameRepository.GetApplicationUser(userId);
@@ -42,9 +36,10 @@ public class GameService(GameRepository gameRepository)
 
         if (currentHiScore == null || currentHiScore.Points < score.Points)
         {
-            await gameRepository.SetNewHiScore(score);
+            await gameRepository.SetNewHighScore(score);
             return ScoreSubmitResult.HighScore;
         }
+
         return ScoreSubmitResult.NotHighScore;
     }
 
