@@ -1,0 +1,32 @@
+﻿@page "/watch/{id:int}"
+@rendermode InteractiveWebAssembly
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Watch: @Id</PageTitle>
+
+@if (RendererInfo.Name == "WebAssembly" && Id != 0)
+{
+    <div class="position-relative">
+        <div class="d-flex justify-content-center">
+            <UIGridWatch Id="@Id"/>
+        </div>
+    </div>
+}
+else
+{
+    <div style="filter: blur(3px)">
+        <UIGridLoading/>
+    </div>
+    <div class=" position-absolute top-50 start-50">
+        <div class="spinner-border custom-spinner" role="status">
+            <span class="sr-only" style="font-size: 28px; color:white">Loading</span>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public int Id { get; set; }
+
+}

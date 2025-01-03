@@ -44,6 +44,7 @@ public class Game
 
     public Random Random = new Random();
     private readonly HttpClient _httpClient;
+    
     public Game()
     {
         InitDemoSnake();

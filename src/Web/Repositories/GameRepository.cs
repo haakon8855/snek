@@ -12,6 +12,13 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
             .FirstOrDefaultAsync();
     }
 
+    public async Task<Score?> GetScoreById(int id)
+    {
+        return await applicationDbContext.Scores
+            .Where(s => s.Id == id)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task DeleteScoreByUser(ApplicationUser user)
     {
         var score = await GetScoreByUser(user);

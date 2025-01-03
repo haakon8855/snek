@@ -5,20 +5,14 @@ using Web.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-
-
 builder.Services.AddHttpClient("ServerApi", c =>
 {
     c.BaseAddress = builder.Configuration.GetSection("Endpoints:ServerApi").Get<Uri>();
 });
 
-
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
-
-
-
 
 var app = builder.Build();
 

@@ -13,6 +13,12 @@ public class GameService(GameRepository gameRepository)
         return await gameRepository.GetScoreByUser(user);
     }
 
+    public async Task<Replay?> GetReplayById(int id)
+    {
+        var score = await gameRepository.GetScoreById(id);
+        return score?.ReplayData;
+    }
+
     public async Task DeleteScoreByUserId(string userId)
     {
         var user = await gameRepository.GetApplicationUser(userId);

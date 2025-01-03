@@ -38,4 +38,14 @@ public class GameController(GameService gameService) : ControllerBase
             _ => BadRequest()
         };
     }
+
+    [HttpGet("score/{id:int}")]
+    public async Task<IActionResult> Score(int id)
+    {
+        var score = await gameService.GetReplayById(id);
+        if (score is null)
+            return BadRequest();
+
+        return Ok(score);
+    }
 }

@@ -1,0 +1,94 @@
+﻿@using System.Net
+
+@inject IHttpClientFactory HttpClientFactory;
+@rendermode InteractiveWebAssembly
+
+<div>
+	@if (_game is not null)
+	{
+		<div class="d-flex justify-content-between">
+			<h2>Snekpoeng: @_game.Score</h2>
+		</div>
+		<div style="background-color: black;">
+			@for (int i = 0; i < _game.Grid.Length; i++)
+			{
+				<div class="snek-row">
+					@for (int j = 0; j < _game.Grid[0].Length; j++)
+					{
+						<Cell
+							Row="@i"
+							Col="@j"
+							Value="@_game.Grid[i][j]"
+							SnekDirection="@_game.CurrentSnekDirection"/>
+					}
+				</div>
+			}
+		</div>
+	}
+</div>
+
+@code {
+
+	[Parameter] public int Id { get; set; }
+
+	private Game? _game;
+	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(75));
+	private bool _timerStarted = false;
+	private Replay? _replay = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_game = new Game();
+		StateHasChanged();
+		
+		var httpClient = HttpClientFactory.CreateClient("ServerApi");
+		try
+		{
+			var response = await httpClient.GetAsync($"api/Game/score/{Id}");
+			if (response.StatusCode != HttpStatusCode.OK)
+				return;
+
+			var result = await response.Content.ReadFromJsonAsync<Replay>();
+
+			if (result is null)
+				return;
+
+			_replay = result;
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+			throw;
+		}
+
+		_game.Init(_replay.Seed);
+		StateHasChanged();
+		await InitTimer();
+	}
+
+	private async Task InitTimer()
+	{
+		await Task.Delay(1000);
+		if (_game is null || _replay is null)
+			return;
+		while (await _timer.WaitForNextTickAsync())
+		{
+			var step = _game.Step;
+			if (_replay.Inputs.ContainsKey(step))
+			{
+				_game.ChangeSnekDirection(_replay.Inputs[step]);
+			}
+
+			var validState = _game.Update();
+
+			StateHasChanged();
+			if (!validState)
+			{
+				StateHasChanged();
+				break;
+			}
+		}
+	}
+
+
+}

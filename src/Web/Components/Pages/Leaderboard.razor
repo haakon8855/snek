@@ -26,6 +26,7 @@ else
 			<th>Name</th>
 			<th>Score</th>
 			<th>Time</th>
+			<th/>
 		</tr>
 		</thead>
 		<tbody>
@@ -36,6 +37,12 @@ else
 				<td>@_scores[i].User.UserName</td>
 				<td>@_scores[i].Points</td>
 				<td>@_scores[i].Timestamp.ToLocalDateTimeString()</td>
+				<td>
+					@if (_scores[i].ReplayData is not null)
+					{
+						<a class="btn btn-primary p-0 px-1" href="watch/@_scores[i].Id">Watch replay</a>
+					}
+				</td>
 			</tr>
 		}
 		</tbody>
