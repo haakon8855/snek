@@ -6,6 +6,8 @@
 Snek is a game about getting long snek. Try to get a long snek:
 [snek-game.azurewebsites.net](https://snek-game.azurewebsites.net)
 
+<img src="snek.png" width=500>
+
 This project was created in December 2023 to learn more about Blazor and its (then) new rendermode,
 InteractiveAuto. It is built upon the Blazor template from Microsoft with Microsoft's
 Identity library, which includes a working login and account management profile. The game itself
