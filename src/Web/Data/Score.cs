@@ -1,4 +1,6 @@
-﻿namespace Web.Data;
+﻿using Web.Client.SnekLogic;
+
+namespace Web.Data;
 
 public class Score
 {
@@ -8,5 +10,7 @@ public class Score
 
     public required ApplicationUser User { get; set; }
 
-    public DateTime Timestamp { get; set; }
+    public required DateTime Timestamp { get; set; }
+    
+    public Replay? ReplayData { get; set; }
 }

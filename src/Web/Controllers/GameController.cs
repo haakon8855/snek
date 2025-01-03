@@ -15,7 +15,7 @@ public class GameController(GameService gameService) : ControllerBase
     [HttpPost("score")]
     public async Task<IActionResult> Score([FromBody] HighScoreDTO points)
     {
-        string userId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        var userId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
         if (points.Replay is null)
             return BadRequest();
@@ -28,7 +28,7 @@ public class GameController(GameService gameService) : ControllerBase
         if (!Game.VerifyReplay(points.Replay))
             return BadRequest();
 
-        ScoreSubmitResult result = await gameService.SetScore(userId, points.Replay.Score);
+        ScoreSubmitResult result = await gameService.SetScore(userId, points.Replay);
 
         return result switch
         {

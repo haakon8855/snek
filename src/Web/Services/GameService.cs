@@ -1,4 +1,5 @@
-﻿using Web.Data;
+﻿using Web.Client.SnekLogic;
+using Web.Data;
 using Web.Models;
 using Web.Repositories;
 
@@ -18,15 +19,16 @@ public class GameService(GameRepository gameRepository)
         await gameRepository.DeleteScoreByUser(user);
     }
 
-    public async Task<ScoreSubmitResult> SetScore(string userId, int points)
+    public async Task<ScoreSubmitResult> SetScore(string userId, Replay replay)
     {
         var user = await gameRepository.GetApplicationUser(userId);
 
         var score = new Score
         {
             User = user,
-            Points = points,
-            Timestamp = DateTime.UtcNow
+            Points = replay.Score,
+            Timestamp = DateTime.UtcNow,
+            ReplayData = replay
         };
 
         if (score.Points < 0)
