@@ -17,6 +17,11 @@ In December 2024, proper IaC files were written for the project and a GitHub Wor
 was set up to handle continuous deployment of Azure infrastructure. Additionally,
 the project was updated to .NET 9 and the code was refactored.
 
+## Additional documentation
+
+- [GitHub Workflows](/documentation/workflows.md)
+- [Run project locally](/documentation/getting-started.md)
+
 ## Technology
 
 Snek is an ASP.NET Core Blazor web application running with the somewhat new
