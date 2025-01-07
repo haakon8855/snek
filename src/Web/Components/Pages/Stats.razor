@@ -1,0 +1,53 @@
+@page "/stats"
+@attribute [StreamRendering]
+@using Microsoft.AspNetCore.Identity
+@using Web.Components.Account
+@using Web.Services
+@inject IdentityUserAccessor UserAccessor
+@inject UserManager<ApplicationUser> UserManager
+@inject GameService GameService
+
+<PageTitle>Stats</PageTitle>
+
+
+@if (_user is null)
+{
+    <h3>Player statistics</h3>
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h3>@_user.UserName's statistics</h3>
+    <table class="table" style="max-width: 550px">
+        <tbody>
+        <tr>
+            <td>Total games played</td>
+            <td>@_user.StatsGamesStarted</td>
+        </tr>
+        <tr>
+            <td>Total food eaten</td>
+            <td>@_user.StatsTotalPoints</td>
+        </tr>
+        <tr>
+            <td>Total number of inputs</td>
+            <td>@_user.StatsTotalInputs</td>
+        </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private ApplicationUser? _user;
+
+    [CascadingParameter] private HttpContext? _httpContext { get; set; } = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_httpContext is null)
+            return;
+        var user = await UserAccessor.GetRequiredUserAsync(_httpContext);
+        _user = await GameService.GetUser(user.Id);
+    }
+
+}

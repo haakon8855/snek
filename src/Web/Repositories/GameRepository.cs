@@ -86,20 +86,36 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
         // Get total number of inputs for all these scores and store in user
         return allScoresForUser.Sum(s => s.ReplayData?.Inputs.Count ?? 0);
     }
-    
+
     public async Task<ApplicationUser> GetApplicationUser(string userId)
     {
-        return await applicationDbContext.Users
+        var user = await applicationDbContext.Users
             .Where(u => u.Id == userId)
             .FirstAsync();
+
+        if (user.StatsTotalInputs == 0)
+        {
+            user.StatsTotalInputs = await GetInitalStatsTotalInputs(user);
+            await applicationDbContext.SaveChangesAsync();
+        }
+
+        return user;
     }
 
     public async Task<ApplicationUser> GetApplicationUserWithHighScore(string userId)
     {
-        return await applicationDbContext.Users
+        var user = await applicationDbContext.Users
             .Include(u => u.HighScore)
             .Where(u => u.Id == userId)
             .FirstAsync();
+
+        if (user.StatsTotalInputs == 0)
+        {
+            user.StatsTotalInputs = await GetInitalStatsTotalInputs(user);
+            await applicationDbContext.SaveChangesAsync();
+        }
+
+        return user;
     }
 
     public async Task<List<Score>> GetTopScores(int amount)

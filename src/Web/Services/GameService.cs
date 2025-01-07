@@ -7,6 +7,11 @@ namespace Web.Services;
 
 public class GameService(GameRepository gameRepository)
 {
+    public async Task<ApplicationUser?> GetUser(string userId)
+    {
+        return await gameRepository.GetApplicationUserWithHighScore(userId);
+    }
+        
     public async Task<Score?> GetHighScoreByUserId(string userId)
     {
         var user = await gameRepository.GetApplicationUserWithHighScore(userId);
