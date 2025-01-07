@@ -34,13 +34,13 @@ jobs:
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/snek-app
 
       - name: Upload EF migration script artifact for deployment job
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dbmigrationscript
           path: ${{env.DOTNET_ROOT}}/migrations.sql
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: snekapp
           path: ${{env.DOTNET_ROOT}}/snek-app
@@ -55,13 +55,13 @@ jobs:
     steps:
       - name: Download artifact from build job
         id: download-artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: snekapp 
 
       - name: Download EF migration script artifact from build job
         id: download-migration-script
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dbmigrationscript
 
