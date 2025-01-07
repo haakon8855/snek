@@ -1,10 +1,10 @@
 @page "/stats"
+@page "/stats/{UserId:guid}"
 @attribute [StreamRendering]
-@using Microsoft.AspNetCore.Identity
+@attribute [Authorize]
 @using Web.Components.Account
 @using Web.Services
 @inject IdentityUserAccessor UserAccessor
-@inject UserManager<ApplicationUser> UserManager
 @inject GameService GameService
 
 <PageTitle>Stats</PageTitle>
@@ -21,16 +21,28 @@ else
     <table class="table" style="max-width: 550px">
         <tbody>
         <tr>
-            <td>Total games played</td>
+            <td>World ranking</td>
+            <td>@_rank</td>
+        </tr>
+        <tr>
+            <td>Games played</td>
             <td>@_user.StatsGamesStarted</td>
         </tr>
         <tr>
-            <td>Total food eaten</td>
+            <td>Kills (Total food eaten)</td>
             <td>@_user.StatsTotalPoints</td>
         </tr>
         <tr>
-            <td>Total number of inputs</td>
+            <td>Inputs (Total keypresses)</td>
             <td>@_user.StatsTotalInputs</td>
+        </tr>
+        <tr>
+            <td>K/D</td>
+            <td>@(Math.Round(_user.KillDeathRatio, 2))</td>
+        </tr>
+        <tr>
+            <td>Efficiency (inputs per kill)</td>
+            <td>@(Math.Round(_user.Efficiency, 2))</td>
         </tr>
         </tbody>
     </table>
@@ -38,16 +50,29 @@ else
 
 @code {
 
+    [Parameter] public Guid? UserId { get; set; }
+
     private ApplicationUser? _user;
+    private int? _rank;
 
     [CascadingParameter] private HttpContext? _httpContext { get; set; } = null;
 
     protected override async Task OnInitializedAsync()
     {
-        if (_httpContext is null)
-            return;
-        var user = await UserAccessor.GetRequiredUserAsync(_httpContext);
-        _user = await GameService.GetUser(user.Id);
+        var userIdString = UserId.ToString();
+        if (userIdString is not null && !string.IsNullOrEmpty(userIdString))
+        {
+            _user = await GameService.GetUser(userIdString);
+            _rank = await GameService.GetUserRank(userIdString);
+        }
+        else
+        {
+            if (_httpContext is null)
+                return;
+            var user = await UserAccessor.GetRequiredUserAsync(_httpContext);
+            _user = await GameService.GetUser(user.Id);
+            _rank = await GameService.GetUserRank(user.Id);
+        }
     }
 
 }

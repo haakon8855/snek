@@ -13,6 +13,27 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
         return user?.HighScore;
     }
 
+    public async Task<int?> GetUserRankByUserId(string userId)
+    {
+        var user = await applicationDbContext.Users
+            .Include(u => u.HighScore)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        var userScore = user?.HighScore?.Points;
+        
+        if (userScore is null)
+            return null;
+
+        var index = await applicationDbContext.Scores
+            .Where(score => score.Points > userScore)
+            .Include(score => score.User)
+            .Join(applicationDbContext.Users,
+                score => score.Id,
+                user => user.HighScoreId,
+                (score, user) => score)
+            .CountAsync();
+        return index + 1;
+    }
+
     public async Task<Score?> GetScoreById(int id)
     {
         return await applicationDbContext.Scores

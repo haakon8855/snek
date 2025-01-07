@@ -14,4 +14,8 @@ public class ApplicationUser : IdentityUser
     public int StatsTotalPoints { get; set; }
     
     public int StatsTotalInputs { get; set; }
+
+    public double KillDeathRatio => StatsTotalPoints / (double)StatsGamesStarted;
+
+    public double Efficiency => StatsTotalInputs / (double)StatsTotalPoints;
 }

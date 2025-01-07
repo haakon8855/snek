@@ -34,7 +34,7 @@ else
 		{
 			<tr>
 				<td>@(i + 1)</td>
-				<td>@_scores[i].User.UserName</td>
+				<td><a href="stats/@_scores[i].User.Id">@_scores[i].User.UserName</a></td>
 				<td>@_scores[i].Points</td>
 				<td>@_scores[i].Timestamp.ToLocalDateTimeString()</td>
 				<td>
