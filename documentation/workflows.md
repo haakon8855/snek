@@ -15,7 +15,12 @@ These two workflows are used to automatically update the app when there are chan
 
 ## App deploy
 
-The application build and deploy workflow performs the following steps:
+The application build and deploy workflow runs automatically when code is pushed to the source-directory and the workflow file itself:
+
+- `src/**`
+- `.github/workflows/deploy-app.yml`
+
+It performs the following steps:
 
 1. Build
    1. Checkout repository (fetch code)
@@ -34,17 +39,52 @@ The application build and deploy workflow performs the following steps:
 
 ## Infrastructure deploy
 
-This workflow has not yet been competed, but I have got it set up with authentication with a User Assigned Managed Identity in Azure. This was a bit of a hassle to set up here are the steps:
+The infrastructure deploy workflow runs automatically when IaC is pushed to the infrastructure-directory and the workflow file itself:
 
-1. Create a *User Assigned Managed Identity*:
-   1. Go to you subscription, then show all the resources in that subscription. 
-   2. Click "Create" and create a "User Assigned Managed Identity".
-   3. Select your subscription, your resource group, region and a name for your managed identity.
-2. Give your MI proper access:
-   1. Go to role assignments in Access Control in your subscription.
-   2. Click on add, and give your UAMI the "Owner" role.
-3. Configure *Federated Credentials*  
-   *This step will give your GH Workflow permission to log in as your MI.*  
+- `infrastructure/**`
+- `.github/workflows/deploy-infra.yml`
+
+It performs the following jobs and steps:
+
+1. Bicep What-If
+   1. Checkout repository (fetch code)
+   2. Login to Azure CLI with UAMI
+   3. Lint bicep files
+   4. Validate bicep files with the pre-existing subscription in Azure
+   5. Run What-If analysis
+      - The output of this step shows what will be changed in the Azure subscription upon deploy
+      - Serves as a step to verify changes are as intended
+2. Bicep Deploy
+   1. Checkout repository (fetch code)
+   2. Login to Azure CLI with UAMI
+   3. Bicep deployment
+      - Deploy resources defined in IaC to Azure (no going back now!)
+
+### Authentication setup
+
+The setup process for authentication with Azure was quite meticulous and required some experimentation.
+
+Below is a guide for setting up this authentication process with a **User Assigned Managed Identity**.
+
+#### Step 1: Create a *User Assigned Managed Identity* (UAMI)
+
+*This step sets up the Managed Identity that will create resources in your subscription.*
+
+1. Go to you subscription, then show all the resources in that subscription.
+2. Click "Create" and create a "User Assigned Managed Identity".
+3. Select your subscription, your resource group, region and a name for your managed identity.
+
+#### Step 2: Give your Managed Identity the required access level
+
+*This step will give your Managed Identity access to deploy resources in your subscription.*
+
+1. Go to role assignments in Access Control in your subscription.
+2. Click on add, and give your UAMI the "Owner" role.
+
+#### Step 3: Configure Federated Credentials
+
+*This step will give your GitHub Workflow permission to log in as your MI.*
+
    1. Go back to resources in your subscription and open your MI.
       - You have to go via resources, if not you will go to the Enterprise Application connected to your MI, and not your MI.
    2. Go to "Federated Credentials" under "Settings"
@@ -67,7 +107,10 @@ This workflow has not yet been competed, but I have got it set up with authentic
         - AZURE_CLIENT_ID: The Client ID of your managed identity (can also be found as the Application ID in the corresponding Enterprise Application).
         - AZURE_SUBSCRIPTION_ID: The ID of the subscription containing your UAMI.
         - AZURE_TENANT_ID: The Entra ID Tenant conaining your subscription and your UAMI. This can be found by going to "Tenant properties" in the Azure Portal.
-   6. To use these secrets and log in to Azure as your MI you can use the base GH Workflow below, which logs in and verifies that you have authenticated with Azure by printing your account info.
+
+#### Step 4: Test everything and verify that it works
+
+To test that the credentials work and that your workflow is able to log in as you UAMI in Azure, you can use the workflow defined below. This workflow first logs in as your UAMI and then verifies that you have authenticated with Azure by printing the account info. (GitHub will censor sensitive information from the output)
 
 ```yaml
 name: Azure authenticated workflow
