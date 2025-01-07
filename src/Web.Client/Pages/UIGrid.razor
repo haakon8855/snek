@@ -8,16 +8,25 @@
 
 <div>
 	<div class="d-flex justify-content-between">
-        <h2>Snekpoeng: @_game.Score</h2>
+		<h2>Snekpoeng: @_game.Score</h2>
 		<div class="p-2">
-            <label for="toggleMusic" class="fw-bold px-2">Music</label>
-            <input id="toggleMusic" type="checkbox" @bind="_enableMusic"/>
+			<label for="toggleMusic" class="fw-bold px-2">Music</label>
+			<input id="toggleMusic" type="checkbox" @bind="_enableMusic"/>
 		</div>
 	</div>
 	@if (_playMusic)
 	{
-		<audio id="musicPlayer" autoplay muted=@_playMusic><source src="assets/music.mp3" /></audio>
+		<audio id="musicPlayer" autoplay muted=@_playMusic>
+			<source src="assets/music.mp3"/>
+		</audio>
 		<script>document.getElementById('musicPlayer').volume = 0.1</script>
+	}
+	@if (_playNice)
+	{
+		<audio id="musicPlayerNice" autoplay muted=@_playNice>
+			<source src="assets/nice.mp3"/>
+		</audio>
+		<script>document.getElementById('musicPlayerNice').volume = 0.5</script>
 	}
 
 	<div style="background-color: black;">
@@ -30,7 +39,7 @@
 						Row="@i"
 						Col="@j"
 						Value="@_game.Grid[i][j]"
-						SnekDirection="@_game.CurrentSnekDirection" />
+						SnekDirection="@_game.CurrentSnekDirection"/>
 				}
 			</div>
 		}
@@ -54,14 +63,15 @@
 	private PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(75));
 	private bool _gameOver = false;
 	private bool _timerStarted = false;
-	private bool _enableMusic = true;
+	private bool _enableMusic = false;
 	private bool _playMusic = false;
-	private HttpStatusCode _scoreResponseCode; 
+	private bool _playNice = false;
+	private HttpStatusCode _scoreResponseCode;
 
 	protected override void OnInitialized()
-    {
-		_game = new Game(HttpClientFactory);	
-    }
+	{
+		_game = new Game(HttpClientFactory);
+	}
 
 	private async Task InitTimer()
 	{
@@ -70,11 +80,15 @@
 		{
 			bool validState = _game.Update();
 			_gameOver = !validState;
+
+			if (_game.Score == 69)
+				_playNice = true;
+
 			if (!validState)
-			{
 				_playMusic = false;
-			}
+		
 			StateHasChanged();
+
 			if (!validState)
 			{
 				_scoreResponseCode = await _game.GameOver();
@@ -116,6 +130,7 @@
 					{
 						ResetGame();
 					}
+
 					return;
 				case "k":
 				case "ArrowUp":
@@ -148,13 +163,14 @@
 			}
 		}
 
-        _game.ChangeSnekDirection(requestedSnekDirection);
-        _game.ChangeFoodDirection(requestedFoodDirection);
+		_game.ChangeSnekDirection(requestedSnekDirection);
+		_game.ChangeFoodDirection(requestedFoodDirection);
 
-        if (!_gameOver && !_timerStarted)
-        {
-            await InitTimer();
-            _timerStarted = true;
-        }
+		if (!_gameOver && !_timerStarted)
+		{
+			await InitTimer();
+			_timerStarted = true;
+		}
 	}
+
 }
