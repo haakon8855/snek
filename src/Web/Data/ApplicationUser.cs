@@ -6,5 +6,12 @@ namespace Web.Data;
 public class ApplicationUser : IdentityUser
 {
     public int? HighScoreId { get; set; }
+    
     public Score? HighScore { get; set; }
+    
+    public int StatsGamesStarted { get; set; }
+    
+    public int StatsTotalPoints { get; set; }
+    
+    public int StatsTotalInputs { get; set; }
 }

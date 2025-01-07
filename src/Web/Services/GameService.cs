@@ -9,8 +9,8 @@ public class GameService(GameRepository gameRepository)
 {
     public async Task<Score?> GetHighScoreByUserId(string userId)
     {
-        var user = await gameRepository.GetApplicationUser(userId);
-        return await gameRepository.GetHighScoreByUserId(user.Id);
+        var user = await gameRepository.GetApplicationUserWithHighScore(userId);
+        return user.HighScore;
     }
 
     public async Task<Replay?> GetReplayByScoreId(int id)

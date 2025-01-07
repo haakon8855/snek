@@ -7,9 +7,10 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
 {
     public async Task<Score?> GetHighScoreByUserId(string userId)
     {
-        return await applicationDbContext.Scores
-            .Where(s => s.User.Id == userId)
-            .FirstOrDefaultAsync();
+        var user = await applicationDbContext.Users
+            .Include(u => u.HighScore)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        return user?.HighScore;
     }
 
     public async Task<Score?> GetScoreById(int id)
@@ -23,16 +24,31 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
     {
         var scores = applicationDbContext.Scores
             .Where(s => s.User.Id == user.Id);
-        
+
         if (!scores.Any())
             return;
-        
+
         applicationDbContext.Scores.RemoveRange(scores);
         await applicationDbContext.SaveChangesAsync();
     }
 
     public async Task AddScore(Score score)
     {
+        var user = await applicationDbContext.Users
+            .Include(u => u.HighScore)
+            .FirstOrDefaultAsync(u => u.Id == score.UserId);
+
+        if (user is null)
+            return;
+
+        // Update stats
+        user.StatsGamesStarted += 1;
+        user.StatsTotalPoints += score.Points;
+        // If StatsTotalInputs has not yet been set it must be set for the first time
+        if (user.StatsTotalInputs == 0)
+            user.StatsTotalInputs = await GetInitalStatsTotalInputs(user);
+        user.StatsTotalInputs += score.ReplayData?.Inputs.Count ?? 0;
+
         await applicationDbContext.Scores.AddAsync(score);
         await applicationDbContext.SaveChangesAsync();
     }
@@ -42,18 +58,46 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
         var user = await applicationDbContext.Users
             .Include(u => u.HighScore)
             .FirstOrDefaultAsync(u => u.Id == score.UserId);
-        
+
         if (user is null)
             return;
-        
-        await applicationDbContext.Scores.AddAsync(score);
+
+        // Update stats
+        user.StatsGamesStarted += 1;
+        user.StatsTotalPoints += score.Points;
+        // If StatsTotalInputs has not yet been set it must be set for the first time
+        if (user.StatsTotalInputs == 0)
+            user.StatsTotalInputs = await GetInitalStatsTotalInputs(user);
+        user.StatsTotalInputs += score.ReplayData?.Inputs.Count ?? 0;
+
+        // Update highscore
         user.HighScore = score;
+
+        await applicationDbContext.Scores.AddAsync(score);
         await applicationDbContext.SaveChangesAsync();
     }
 
+    private async Task<int> GetInitalStatsTotalInputs(ApplicationUser user)
+    {
+        // Get all stored scores for current user
+        var allScoresForUser = await applicationDbContext.Scores
+            .Where(s => s.UserId == user.Id)
+            .ToListAsync();
+        // Get total number of inputs for all these scores and store in user
+        return allScoresForUser.Sum(s => s.ReplayData?.Inputs.Count ?? 0);
+    }
+    
     public async Task<ApplicationUser> GetApplicationUser(string userId)
     {
         return await applicationDbContext.Users
+            .Where(u => u.Id == userId)
+            .FirstAsync();
+    }
+
+    public async Task<ApplicationUser> GetApplicationUserWithHighScore(string userId)
+    {
+        return await applicationDbContext.Users
+            .Include(u => u.HighScore)
             .Where(u => u.Id == userId)
             .FirstAsync();
     }
