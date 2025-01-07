@@ -28,7 +28,7 @@ public class GameController(GameService gameService) : ControllerBase
         if (!Game.VerifyReplay(points.Replay))
             return BadRequest();
 
-        ScoreSubmitResult result = await gameService.SetScore(userId, points.Replay);
+        ScoreSubmitResult result = await gameService.SubmitScore(userId, points.Replay);
 
         return result switch
         {
@@ -42,7 +42,7 @@ public class GameController(GameService gameService) : ControllerBase
     [HttpGet("score/{id:int}")]
     public async Task<IActionResult> Score(int id)
     {
-        var score = await gameService.GetReplayById(id);
+        var score = await gameService.GetReplayByScoreId(id);
         if (score is null)
             return BadRequest();
 

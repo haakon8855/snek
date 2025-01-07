@@ -7,31 +7,32 @@ namespace Web.Services;
 
 public class GameService(GameRepository gameRepository)
 {
-    public async Task<Score?> GetScoreByUserId(string userId)
+    public async Task<Score?> GetHighScoreByUserId(string userId)
     {
         var user = await gameRepository.GetApplicationUser(userId);
-        return await gameRepository.GetScoreByUser(user);
+        return await gameRepository.GetHighScoreByUserId(user.Id);
     }
 
-    public async Task<Replay?> GetReplayById(int id)
+    public async Task<Replay?> GetReplayByScoreId(int id)
     {
         var score = await gameRepository.GetScoreById(id);
         return score?.ReplayData;
     }
 
-    public async Task DeleteScoreByUserId(string userId)
+    public async Task DeleteScoresByUserId(string userId)
     {
         var user = await gameRepository.GetApplicationUser(userId);
-        await gameRepository.DeleteScoreByUser(user);
+        await gameRepository.DeleteScoresByUser(user);
     }
 
-    public async Task<ScoreSubmitResult> SetScore(string userId, Replay replay)
+    public async Task<ScoreSubmitResult> SubmitScore(string userId, Replay replay)
     {
         var user = await gameRepository.GetApplicationUser(userId);
 
         var score = new Score
         {
             User = user,
+            UserId = user.Id,
             Points = replay.Score,
             Timestamp = DateTime.UtcNow,
             ReplayData = replay
@@ -40,14 +41,15 @@ public class GameService(GameRepository gameRepository)
         if (score.Points < 0)
             return ScoreSubmitResult.Failure;
 
-        var currentHiScore = await gameRepository.GetScoreByUser(user);
+        var currentHiScore = await gameRepository.GetHighScoreByUserId(user.Id);
 
         if (currentHiScore == null || currentHiScore.Points < score.Points)
         {
-            await gameRepository.SetNewHighScore(score);
+            await gameRepository.AddScoreAndSetHighScore(score);
             return ScoreSubmitResult.HighScore;
         }
 
+        await gameRepository.AddScore(score);
         return ScoreSubmitResult.NotHighScore;
     }
 

@@ -103,7 +103,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 				personalData.Add($"{l.LoginProvider} external login provider key", l.ProviderKey);
 			}
 
-			var highsnek = await gameService.GetScoreByUserId(userId);
+			var highsnek = await gameService.GetHighScoreByUserId(userId);
 			if (highsnek is not null)
 			{
 				var highsnekDict = new Dictionary<string, string>()

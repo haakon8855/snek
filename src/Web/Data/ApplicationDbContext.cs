@@ -31,5 +31,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .Property(g => g.ReplayData)
             .HasConversion(jsonConverter)
             .Metadata.SetValueComparer(jsonComparer);
+
+        builder.Entity<ApplicationUser>()
+            .HasMany<Score>()
+            .WithOne(score => score.User)
+            .HasForeignKey(score => score.UserId);
+        builder.Entity<Score>()
+            .HasOne<ApplicationUser>()
+            .WithOne(user => user.HighScore)
+            .HasForeignKey<ApplicationUser>(user => user.HighScoreId);
     }
 }

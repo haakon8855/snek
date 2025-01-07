@@ -66,7 +66,7 @@
             return;
         }
 
-        await GameService.DeleteScoreByUserId(user.Id);
+        await GameService.DeleteScoresByUserId(user.Id);
         var result = await UserManager.DeleteAsync(user);
         if (!result.Succeeded)
         {
