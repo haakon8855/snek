@@ -1,4 +1,5 @@
-﻿@page "/watch/{id:int}"
+﻿@page "/watch/{Id:int}"
+@page "/watch/{Id:int}/{StartPoints:int}"
 @rendermode InteractiveWebAssembly
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
@@ -9,7 +10,7 @@
 {
     <div class="position-relative">
         <div class="d-flex justify-content-center">
-            <UIGridWatch Id="@Id"/>
+            <UIGridWatch Id="@Id" StartPoints="@StartPoints"/>
         </div>
     </div>
 }
@@ -28,5 +29,7 @@ else
 @code {
 
     [Parameter] public int Id { get; set; }
+    
+    [Parameter] public int StartPoints { get; set; }
 
 }

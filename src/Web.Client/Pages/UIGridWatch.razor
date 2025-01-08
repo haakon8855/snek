@@ -1,6 +1,7 @@
 ﻿@using System.Net
 
 @inject IHttpClientFactory HttpClientFactory;
+@inject NavigationManager NavManager;
 @rendermode InteractiveWebAssembly
 
 <div>
@@ -8,8 +9,13 @@
 	{
 		<div class="d-flex justify-content-between align-items-center">
 			<h2>Snekpoeng: @_game.Score</h2>
-			<div class="p-2">
-				<label for="toggleDoubleSpeed" class="fw-bold px-2" title="Snabbsnek">
+			<div class="p-2" style="display: flex; justify-content: space-between; align-items: center">
+				<InputNumber Value="_jumpToPoints"
+				             ValueChanged="(int value) => JumpToPoints(value)"
+				             ValueExpression="() => _jumpToPoints"
+				             class="form-control"
+				             disabled="@_jumpInputIsDisabled"/>
+				<label for="toggleDoubleSpeed" class="fw-bold px-2" style="display: flex; align-items: center" title="Snabbsnek">
 					@if (_enableDoubleSpeed)
 					{
 						<span class="icon icon-fast-forward-fill"></span>
@@ -45,6 +51,7 @@
 @code {
 
 	[Parameter] public int Id { get; set; }
+	[Parameter] public int StartPoints { get; set; }
 
 	private Game? _game;
 	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(75));
@@ -52,9 +59,12 @@
 	private Replay? _replay = null;
 	private bool _enableDoubleSpeed = false;
 	private bool _enableDoubleSpeedChanged;
+	private int _jumpToPoints = 0;
+	private bool _jumpInputIsDisabled = false;
 
 	protected override async Task OnInitializedAsync()
 	{
+		_jumpToPoints = StartPoints;
 		_game = new Game();
 		StateHasChanged();
 
@@ -78,14 +88,18 @@
 			throw;
 		}
 
-		_game.Init(_replay.Seed);
+		var game = new Game();
+		game.Init(_replay.Seed);
+		_game = SimulateUntilPointsReached(game, StartPoints);
 		StateHasChanged();
+
 		await InitTimer();
+		_jumpInputIsDisabled = true;
 	}
 
 	private async Task InitTimer()
 	{
-		await Task.Delay(1000);
+		await Task.Delay(100);
 		if (_game is null || _replay is null)
 			return;
 		while (await _timer.WaitForNextTickAsync())
@@ -98,12 +112,16 @@
 			}
 
 			var step = _game.Step;
-			if (_replay.Inputs.ContainsKey(step))
+			if (_replay.Inputs.TryGetValue(step, out var input))
 			{
-				_game.ChangeSnekDirection(_replay.Inputs[step]);
+				_game.ChangeSnekDirection(input);
 			}
 
+			var score = _game.Score;
 			var validState = _game.Update();
+			if (score < _game.Score)
+				_jumpToPoints = _game.Score;
+
 
 			StateHasChanged();
 			if (!validState)
@@ -114,10 +132,41 @@
 		}
 	}
 
+	private Game SimulateUntilPointsReached(Game game, int points)
+	{
+		if (_replay is null)
+			return game;
+		while (game.Score < points)
+		{
+			var step = game.Step;
+			if (_replay.Inputs.TryGetValue(step, out var input))
+				game.ChangeSnekDirection(input);
+
+			var validState = game.Update();
+			if (!validState)
+				break;
+		}
+
+		return game;
+	}
+
 	private void DoubleSpeedChanged(bool value)
 	{
 		_enableDoubleSpeed = value;
 		_enableDoubleSpeedChanged = true;
+	}
+
+	private void JumpToPoints(int value)
+	{
+		_jumpToPoints = value;
+		if (_jumpToPoints < 0)
+			_jumpToPoints = Math.Abs(_jumpToPoints);
+		if (_replay is null)
+			return;
+		var game = new Game();
+		game.Init(_replay.Seed);
+		_game = SimulateUntilPointsReached(game, _jumpToPoints);
+		StateHasChanged();
 	}
 
 }
