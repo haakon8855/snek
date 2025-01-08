@@ -8,7 +8,9 @@ using Web.Data;
 using Web.Repositories;
 using Web.Services;
 
-CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("nb-NO");
+var culture = new CultureInfo("nb-NO");
+culture.NumberFormat = new CultureInfo("en-UK").NumberFormat;
+CultureInfo.DefaultThreadCurrentCulture = culture;
 
 var builder = WebApplication.CreateBuilder(args);
 
