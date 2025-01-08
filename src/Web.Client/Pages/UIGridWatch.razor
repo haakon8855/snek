@@ -6,8 +6,23 @@
 <div>
 	@if (_game is not null)
 	{
-		<div class="d-flex justify-content-between">
+		<div class="d-flex justify-content-between align-items-center">
 			<h2>Snekpoeng: @_game.Score</h2>
+			<div class="p-2">
+				<label for="toggleDoubleSpeed" class="fw-bold px-2" title="Snabbsnek">
+					@if (_enableDoubleSpeed)
+					{
+						<span class="icon icon-fast-forward-fill"></span>
+					}
+					else
+					{
+						<span class="icon icon-fast-forward"></span>
+					}
+				</label>
+				<InputCheckbox id="toggleDoubleSpeed" Value="_enableDoubleSpeed"
+				               ValueChanged="(bool value) => DoubleSpeedChanged(value)"
+				               ValueExpression="() => _enableDoubleSpeed" hidden/>
+			</div>
 		</div>
 		<div style="background-color: black;">
 			@for (int i = 0; i < _game.Grid.Length; i++)
@@ -35,12 +50,14 @@
 	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(75));
 	private bool _timerStarted = false;
 	private Replay? _replay = null;
+	private bool _enableDoubleSpeed = false;
+	private bool _enableDoubleSpeedChanged;
 
 	protected override async Task OnInitializedAsync()
 	{
 		_game = new Game();
 		StateHasChanged();
-		
+
 		var httpClient = HttpClientFactory.CreateClient("ServerApi");
 		try
 		{
@@ -73,6 +90,13 @@
 			return;
 		while (await _timer.WaitForNextTickAsync())
 		{
+			if (_enableDoubleSpeedChanged)
+			{
+				var delay = _enableDoubleSpeed ? 30 : 75;
+				_timer = new(TimeSpan.FromMilliseconds(delay));
+				_enableDoubleSpeedChanged = false;
+			}
+
 			var step = _game.Step;
 			if (_replay.Inputs.ContainsKey(step))
 			{
@@ -90,5 +114,10 @@
 		}
 	}
 
+	private void DoubleSpeedChanged(bool value)
+	{
+		_enableDoubleSpeed = value;
+		_enableDoubleSpeedChanged = true;
+	}
 
 }
