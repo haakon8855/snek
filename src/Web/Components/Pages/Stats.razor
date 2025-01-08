@@ -2,6 +2,7 @@
 @page "/stats/{UserId:guid}"
 @attribute [StreamRendering]
 @attribute [Authorize]
+@using System.Globalization
 @using Web.Components.Account
 @using Web.Services
 @inject IdentityUserAccessor UserAccessor
@@ -17,35 +18,79 @@
 }
 else
 {
-    <h3>@_user.UserName's statistics</h3>
-    <table class="table" style="max-width: 550px">
-        <tbody>
-        <tr>
-            <td>World ranking</td>
-            <td>@_rank</td>
-        </tr>
-        <tr>
-            <td>Games played</td>
-            <td>@_user.StatsGamesStarted</td>
-        </tr>
-        <tr>
-            <td>Kills (Total food eaten)</td>
-            <td>@_user.StatsTotalPoints</td>
-        </tr>
-        <tr>
-            <td>Inputs (Total keypresses)</td>
-            <td>@_user.StatsTotalInputs</td>
-        </tr>
-        <tr>
-            <td>K/D</td>
-            <td>@(Math.Round(_user.KillDeathRatio, 2))</td>
-        </tr>
-        <tr>
-            <td>Efficiency (inputs per kill)</td>
-            <td>@(Math.Round(_user.Efficiency, 2))</td>
-        </tr>
-        </tbody>
-    </table>
+    <div style="display: flex; justify-content: start">
+        <div style="padding-right: 100px;">
+            <h3>@_user.UserName's statistics</h3>
+            <table class="table" style="max-width: 550px; min-width: 400px;">
+                <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>World ranking</td>
+                    <td>@_rank</td>
+                </tr>
+                <tr>
+                    <td>Games played</td>
+                    <td>@_user.StatsGamesStarted</td>
+                </tr>
+                <tr>
+                    <td>Kills (Total food eaten)</td>
+                    <td>@_user.StatsTotalPoints</td>
+                </tr>
+                <tr>
+                    <td>Inputs (Total keypresses)</td>
+                    <td>@_user.StatsTotalInputs</td>
+                </tr>
+                <tr>
+                    <td>K/D</td>
+                    <td>@(Math.Round(_user.KillDeathRatio, 2))</td>
+                </tr>
+                <tr>
+                    <td>Efficiency (inputs per kill)</td>
+                    <td>@(Math.Round(_user.Efficiency, 2))</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h3>Recent games</h3>
+            @if (_recentScores.Count == 0)
+            {
+                <p>This user has not played yet</p>
+            }
+            else
+            {
+                <table class="table" style="max-width: 550px; min-width: 400px;">
+                    <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Points</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var score in _recentScores)
+                    {
+                        <tr>
+                            <td title="@score.Timestamp">@DateTimeToRelativeTimeString(score.Timestamp)</td>
+                            <td>@score.Points</td>
+                            <td>
+                                @if (@score.ReplayData is not null)
+                                {
+                                    <a class="btn btn-primary p-0 px-1" href="watch/@score.Id">Watch replay</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
 }
 
 @code {
@@ -54,6 +99,7 @@ else
 
     private ApplicationUser? _user;
     private int? _rank;
+    private List<Score> _recentScores = [];
 
     [CascadingParameter] private HttpContext? _httpContext { get; set; } = null;
 
@@ -64,6 +110,7 @@ else
         {
             _user = await GameService.GetUser(userIdString);
             _rank = await GameService.GetUserRank(userIdString);
+            _recentScores = await GameService.GetRecentScores(userIdString);
         }
         else
         {
@@ -72,7 +119,27 @@ else
             var user = await UserAccessor.GetRequiredUserAsync(_httpContext);
             _user = await GameService.GetUser(user.Id);
             _rank = await GameService.GetUserRank(user.Id);
+            _recentScores = await GameService.GetRecentScores(user.Id);
         }
+    }
+
+    private string DateTimeToRelativeTimeString(DateTime dateTime)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - dateTime;
+        
+        if (diff < TimeSpan.FromSeconds(60))
+            return $"{(int)diff.TotalSeconds} seconds ago";
+        if (diff < TimeSpan.FromMinutes(60))
+            return $"{(int)diff.TotalMinutes} minutes ago";
+        if (dateTime > DateTime.Now.Date)
+            return $"{(int)diff.TotalHours} hours ago";
+        if (dateTime > DateTime.Now.Date.AddDays(-1))
+            return $"yesterday {dateTime.ToShortTimeString()}";
+        if (dateTime > DateTime.Now.Date.AddDays(-6))
+            return $"{dateTime.DayOfWeek.ToString()} {dateTime.ToShortTimeString()}";
+
+        return dateTime.ToString(CultureInfo.CurrentCulture);
     }
 
 }

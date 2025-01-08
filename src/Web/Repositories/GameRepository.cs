@@ -151,4 +151,14 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
             .Take(amount)
             .ToListAsync();
     }
+
+    public async Task<List<Score>> GetRecentScoresByUserId(string userId, int amount)
+    {
+        return await applicationDbContext.Scores
+            .Where(score => score.UserId == userId)
+            .Include(score => score.User)
+            .OrderByDescending(score => score.Timestamp)
+            .Take(10)
+            .ToListAsync();
+    }
 }
