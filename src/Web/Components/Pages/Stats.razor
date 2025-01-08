@@ -127,13 +127,25 @@ else
     {
         var now = DateTime.UtcNow;
         var diff = now - dateTime;
-        
+
         if (diff < TimeSpan.FromSeconds(60))
-            return $"{(int)diff.TotalSeconds} seconds ago";
+        {
+            var seconds = (int)diff.TotalSeconds;
+            return seconds == 1 ? $"{seconds} second ago" : $"{seconds} seconds ago";
+        }
+
         if (diff < TimeSpan.FromMinutes(60))
-            return $"{(int)diff.TotalMinutes} minutes ago";
+        {
+            var minutes = (int)diff.TotalMinutes;
+            return minutes == 1 ? $"{minutes} minute ago" : $"{minutes} minutes ago";
+        }
+
         if (dateTime > DateTime.Now.Date)
-            return $"{(int)diff.TotalHours} hours ago";
+        {
+            var hours = (int)diff.TotalHours;
+            return hours == 1 ? $"{hours} hour ago" : $"{hours} hours ago";
+        }
+
         if (dateTime > DateTime.Now.Date.AddDays(-1))
             return $"yesterday {dateTime.ToShortTimeString()}";
         if (dateTime > DateTime.Now.Date.AddDays(-6))
