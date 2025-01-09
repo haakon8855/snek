@@ -147,7 +147,7 @@ else
         }
 
         if (dateTime > DateTime.Now.Date.AddDays(-1))
-            return $"yesterday {dateTime.ToShortTimeString()}";
+            return $"Yesterday {dateTime.ToShortTimeString()}";
         if (dateTime > DateTime.Now.Date.AddDays(-6))
             return $"{dateTime.DayOfWeek.ToString()} {dateTime.ToShortTimeString()}";
 
