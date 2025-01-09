@@ -17,9 +17,9 @@ public class GameService(GameRepository gameRepository)
         return await gameRepository.GetUserRankByUserId(userId);
     }
 
-    public async Task<List<Score>> GetRecentScores(string userId)
+    public async Task<List<Score>> GetRecentScores(string userId, int amount)
     {
-        return await gameRepository.GetRecentScoresByUserId(userId, 12);
+        return await gameRepository.GetRecentScoresByUserId(userId, amount);
     }
         
     public async Task<Score?> GetHighScoreByUserId(string userId)

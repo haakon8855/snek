@@ -158,7 +158,7 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
             .Where(score => score.UserId == userId)
             .Include(score => score.User)
             .OrderByDescending(score => score.Timestamp)
-            .Take(10)
+            .Take(amount)
             .ToListAsync();
     }
 }
