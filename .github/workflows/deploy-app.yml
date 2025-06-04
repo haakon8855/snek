@@ -12,15 +12,30 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs: 
+      version: ${{ steps.semantic.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '9.x'
           include-prerelease: true
+      
+      - name: Semantic version
+        id: semantic
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "v"
+          major_pattern: "(MAJOR)"
+          minor_pattern: "(MINOR)"
+          bump_each_commit: true
+          enable_prerelease_mode: false
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
@@ -78,6 +93,7 @@ jobs:
           files: "${{ steps.download-artifact.outputs.download-path }}/appsettings.json"
         env:
           ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
+          AppVersion: ${{ needs.build.outputs.version }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
