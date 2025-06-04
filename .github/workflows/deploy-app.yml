@@ -8,6 +8,9 @@ on:
       - '.github/workflows/deploy-app.yml'
       - 'src/**'
   workflow_dispatch:
+    
+permissions: 
+  contents: write
 
 jobs:
   build:
@@ -37,6 +40,13 @@ jobs:
           minor_pattern: "(MINOR)"
           bump_each_commit: true
           enable_prerelease_mode: false
+      
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.semantic.outputs.version }}"
+          git push origin "${{ steps.semantic.outputs.version }}"
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
