@@ -1,15 +1,17 @@
 @page "/stats"
 @page "/stats/{UserId:guid}"
+
 @attribute [StreamRendering]
 @attribute [Authorize]
+
 @using System.Globalization
 @using Web.Components.Account
 @using Web.Services
+
 @inject IdentityUserAccessor UserAccessor
 @inject GameService GameService
 
 <PageTitle>Stats</PageTitle>
-
 
 @if (_user is null)
 {
@@ -103,7 +105,7 @@ else
 
     private const int RecentNum = 15;
 
-    [CascadingParameter] private HttpContext? _httpContext { get; set; } = null;
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -116,9 +118,9 @@ else
         }
         else
         {
-            if (_httpContext is null)
+            if (HttpContext is null)
                 return;
-            var user = await UserAccessor.GetRequiredUserAsync(_httpContext);
+            var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
             _user = await GameService.GetUser(user.Id);
             _rank = await GameService.GetUserRank(user.Id);
             _recentScores = await GameService.GetRecentScores(user.Id, RecentNum);

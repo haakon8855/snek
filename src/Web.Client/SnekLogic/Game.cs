@@ -25,26 +25,25 @@ public enum CellsType
 
 public class Game
 {
-    public int Score = 0;
-    public int Step = 0;
-    private static (int height, int width) Size = (20, 30);
+    public int Score;
+    public int Step;
+    private static readonly (int height, int width) Size = (20, 30);
     public CellsType[][] Grid = new CellsType[Size.height][];
 
-    private List<(int y, int x)> _snek = new();
-    private (int y, int x) _food = new();
+    private readonly List<(int y, int x)> _snek = [];
+    private (int y, int x) _food;
 
     public Direction CurrentSnekDirection;
     public Direction CurrentFoodDirection;
-    public Direction RequestedSnekDirection;
-    public Direction RequestedFoodDirection;
+    private Direction _requestedSnekDirection;
+    private Direction _requestedFoodDirection;
 
-    public Replay Replay = new();
+    private Replay _replay = new();
+    private bool _moveFood = true;
 
-    private bool moveFood = true;
+    private Random _random = new();
+    private readonly HttpClient? _httpClient;
 
-    public Random Random = new Random();
-    private readonly HttpClient _httpClient;
-    
     public Game()
     {
         InitDemoSnake();
@@ -63,17 +62,20 @@ public class Game
         _snek.Clear();
 
         // Init replay
-        Replay = new Replay();
-
-        // Set random seed
-        Replay.Seed = seed;
-        if (Replay.Seed == 0)
+        _replay = new Replay
         {
-            Replay.Seed = Random.Next();
-        }
-        Random = new Random(Replay.Seed);
+            // Set random seed
+            Seed = seed
+        };
 
-        for (int i = 0; i < Size.height; i++)
+        if (_replay.Seed == 0)
+        {
+            _replay.Seed = _random.Next();
+        }
+
+        _random = new Random(_replay.Seed);
+
+        for (var i = 0; i < Size.height; i++)
         {
             Grid[i] = new CellsType[Size.width];
         }
@@ -93,29 +95,29 @@ public class Game
 
         CurrentSnekDirection = Direction.None;
         CurrentFoodDirection = Direction.None;
-        RequestedSnekDirection = Direction.None;
-        RequestedFoodDirection = Direction.None;
+        _requestedSnekDirection = Direction.None;
+        _requestedFoodDirection = Direction.None;
     }
 
     public bool Update()
     {
         Step++;
-        bool isValidState = UpdateSnek();
-        if (moveFood)
+        var isValidState = UpdateSnek();
+        if (_moveFood)
         {
             UpdateFood();
         }
-        moveFood = !moveFood;
+
+        _moveFood = !_moveFood;
 
         return isValidState;
     }
 
     private bool UpdateSnek()
     {
-        CurrentSnekDirection = RequestedSnekDirection;
+        CurrentSnekDirection = _requestedSnekDirection;
 
-        (int y, int x) nextCoords = (-1, -1);
-        nextCoords = CurrentSnekDirection switch
+        var nextCoords = CurrentSnekDirection switch
         {
             Direction.Down => GetDown(_snek.First()),
             Direction.Up => GetUp(_snek.First()),
@@ -128,12 +130,13 @@ public class Game
         {
             return false;
         }
+
         if (CheckSnekCollision(nextCoords))
         {
             return false;
         }
 
-        bool foodCollision = CheckFoodCollision(nextCoords);
+        var foodCollision = CheckFoodCollision(nextCoords);
 
         if (foodCollision)
         {
@@ -146,7 +149,7 @@ public class Game
 
     private void UpdateFood()
     {
-        CurrentFoodDirection = RequestedFoodDirection;
+        CurrentFoodDirection = _requestedFoodDirection;
 
         (int y, int x) nextCoords = CurrentFoodDirection switch
         {
@@ -161,6 +164,7 @@ public class Game
         {
             return;
         }
+
         if (CheckSnekCollision(nextCoords))
         {
             return;
@@ -183,7 +187,7 @@ public class Game
         Grid[nextCoords.y][nextCoords.x] = CellsType.Food;
         _food = nextCoords;
 
-        RequestedFoodDirection = Direction.None;
+        _requestedFoodDirection = Direction.None;
     }
 
     public void ChangeSnekDirection(Direction requestedDirection)
@@ -192,8 +196,9 @@ public class Game
         {
             return;
         }
-        RequestedSnekDirection = requestedDirection;
-        Replay.Inputs[Step] = requestedDirection;
+
+        _requestedSnekDirection = requestedDirection;
+        _replay.Inputs[Step] = requestedDirection;
     }
 
     public void ChangeFoodDirection(Direction requestedDirection)
@@ -202,25 +207,27 @@ public class Game
         {
             return;
         }
-        RequestedFoodDirection = requestedDirection;
+
+        _requestedFoodDirection = requestedDirection;
     }
 
     private bool DenyChangeDirection(Direction currentDirection, Direction requestedDirection)
     {
         return ((currentDirection == Direction.Down && requestedDirection == Direction.Up) ||
-            (currentDirection == Direction.Up && requestedDirection == Direction.Down) ||
-            (currentDirection == Direction.Left && requestedDirection == Direction.Right) ||
-            (currentDirection == Direction.Right && requestedDirection == Direction.Left) ||
-            (currentDirection == requestedDirection));
+                (currentDirection == Direction.Up && requestedDirection == Direction.Down) ||
+                (currentDirection == Direction.Left && requestedDirection == Direction.Right) ||
+                (currentDirection == Direction.Right && requestedDirection == Direction.Left) ||
+                (currentDirection == requestedDirection));
     }
 
-    public void MoveSnekTo((int y, int x) nextCoords, bool increaseSnekLength)
+    private void MoveSnekTo((int y, int x) nextCoords, bool increaseSnekLength)
     {
         if (!increaseSnekLength)
         {
             Grid[_snek.Last().y][_snek.Last().x] = CellsType.Empty;
             _snek.Remove(_snek.Last());
         }
+
         if (_snek.Count >= 1)
         {
             Grid[_snek.First().y][_snek.First().x] = CellsType.Snek;
@@ -229,17 +236,18 @@ public class Game
         Grid[nextCoords.y][nextCoords.x] = CellsType.SnekHead;
         _snek.Insert(0, nextCoords);
     }
-    public void MoveFoodTo((int y, int x) nextCoords)
+
+    private void MoveFoodTo((int y, int x) nextCoords)
     {
         Grid[_food.y][_food.x] = CellsType.Empty;
         Grid[nextCoords.y][nextCoords.x] = CellsType.Food;
         _food = nextCoords;
     }
 
-    public bool CheckWallCollision((int y, int x) coords)
+    private static bool CheckWallCollision((int y, int x) coords)
     {
-        bool yValid = coords.y >= 0 && coords.y < Size.height;
-        bool xValid = coords.x >= 0 && coords.x < Size.width;
+        var yValid = coords.y >= 0 && coords.y < Size.height;
+        var xValid = coords.x >= 0 && coords.x < Size.width;
         return !yValid || !xValid;
     }
 
@@ -253,38 +261,39 @@ public class Game
         return Grid[coords.y][coords.x] == CellsType.Food;
     }
 
-    public (int y, int x) GetUp((int y, int x) coords)
+    private static (int y, int x) GetUp((int y, int x) coords)
     {
         return (coords.y - 1, coords.x);
     }
 
-    public (int y, int x) GetDown((int y, int x) coords)
+    private static (int y, int x) GetDown((int y, int x) coords)
     {
         return (coords.y + 1, coords.x);
     }
 
-    public (int y, int x) GetLeft((int y, int x) coords)
+    private static (int y, int x) GetLeft((int y, int x) coords)
     {
         return (coords.y, coords.x - 1);
     }
 
-    public (int y, int x) GetRight((int y, int x) coords)
+    private static (int y, int x) GetRight((int y, int x) coords)
     {
         return (coords.y, coords.x + 1);
     }
 
-
-    public (int y, int x) GetRandomCoords()
+    private (int y, int x) GetRandomCoords()
     {
-        int y = Random.Next(0, Size.height);
-        int x = Random.Next(0, Size.width);
+        var y = _random.Next(0, Size.height);
+        var x = _random.Next(0, Size.width);
         return (y, x);
     }
 
     public async Task<HttpStatusCode> GameOver()
     {
-        Replay.Score = Score;
-        var httpContent = Jsonify(Replay);
+        _replay.Score = Score;
+        var httpContent = Jsonify(_replay);
+        if (_httpClient is null)
+            return HttpStatusCode.InternalServerError;
         var response = await _httpClient.PostAsync($"api/game/score", httpContent);
         return response.StatusCode;
     }
@@ -293,27 +302,28 @@ public class Game
     {
         var sha256 = SHA256.Create();
         var serializedReplay = JsonSerializer.Serialize(replay);
-        byte[] dataBytes = Encoding.UTF8.GetBytes(serializedReplay + "Nei, dette går ikke!");
-        byte[] hashedBytes = FoodLogic.ComputeHash(sha256, dataBytes);
-        string hashedString = Convert.ToBase64String(hashedBytes);
+        var dataBytes = Encoding.UTF8.GetBytes(serializedReplay + "Nei, dette går ikke!");
+        var hashedBytes = FoodLogic.ComputeHash(sha256, dataBytes);
+        var hashedString = Convert.ToBase64String(hashedBytes);
 
         return JsonContent.Create(new HighScoreDTO { Replay = replay, Checksum = hashedString });
     }
 
     public static bool VerifyReplay(Replay replay)
     {
-        Game game = new Game();
+        var game = new Game();
         game.Init(replay.Seed);
 
-        bool validState = true;
+        var validState = true;
 
-        int step = 0;
+        var step = 0;
         while (validState)
         {
-            if (replay.Inputs.ContainsKey(step))
+            if (replay.Inputs.TryGetValue(step, out var input))
             {
-                game.ChangeSnekDirection(replay.Inputs[step]);
+                game.ChangeSnekDirection(input);
             }
+
             validState = game.Update();
             step++;
         }
@@ -321,7 +331,7 @@ public class Game
         return game.Score == replay.Score;
     }
 
-    public void InitDemoSnake()
+    private void InitDemoSnake()
     {
         _snek.Clear();
         _snek.Add((9, 11));
@@ -336,7 +346,7 @@ public class Game
 
         // Clear grid
         Grid = new CellsType[Size.height][];
-        for (int i = 0; i < Size.height; i++)
+        for (var i = 0; i < Size.height; i++)
         {
             Grid[i] = new CellsType[Size.width];
         }
