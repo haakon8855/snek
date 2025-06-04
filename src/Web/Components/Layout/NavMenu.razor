@@ -1,6 +1,7 @@
 ﻿@implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
 
 <div class="top-row ps-3 navbar navbar-dark pt-1">
     <div class="d-flex justify-content-start align-items-center ps-2">
@@ -42,7 +43,7 @@
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken/>
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
+                        <input type="hidden" name="ReturnUrl" value="@_currentUrl"/>
                         <button type="submit" class="nav-link">
                             <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
                         </button>
@@ -63,20 +64,41 @@
             </NotAuthorized>
         </AuthorizeView>
     </nav>
+
+    <div class="position-absolute start-0 bottom-0 m-2 text-white-50" style="font-size: 1rem;">
+        <div class="d-flex align-items-center mb-1" title="Build version">
+            <i class="bi bi-tag-fill me-1"></i>
+            <span class="align-middle text-white-50">
+                @_appVersion
+            </span>
+        </div>
+        <a href="https://github.com/haakon8855/snek"
+           target="_blank"
+           class="d-flex align-items-center text-white-50 text-decoration-none"
+           title="View source on GitHub"
+        >
+            <i class="bi bi-github me-1"></i>
+            <span>snek</span>
+        </a>
+    </div>
+
 </div>
 
+
 @code {
-    private string? currentUrl;
+    private string? _currentUrl;
+    private string? _appVersion;
 
     protected override void OnInitialized()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        _currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        _appVersion = string.IsNullOrWhiteSpace(Configuration?["AppVersion"]) ? "localhost" : Configuration["AppVersion"];
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        _currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
 
