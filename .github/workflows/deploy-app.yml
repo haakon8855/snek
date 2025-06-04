@@ -38,7 +38,7 @@ jobs:
           version_format: "v${major}.${minor}.${patch}"
           major_pattern: "(MAJOR)"
           minor_pattern: "(MINOR)"
-          bump_each_commit: true
+          bump_each_commit: false
           enable_prerelease_mode: false
       
       - name: Create Git tag
