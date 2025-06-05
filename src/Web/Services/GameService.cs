@@ -21,7 +21,7 @@ public class GameService(GameRepository gameRepository)
     {
         return await gameRepository.GetRecentScoresByUserId(userId, amount);
     }
-        
+
     public async Task<Score?> GetHighScoreByUserId(string userId)
     {
         var user = await gameRepository.GetApplicationUserWithHighScore(userId);
@@ -40,10 +40,28 @@ public class GameService(GameRepository gameRepository)
         await gameRepository.DeleteScoresByUser(user);
     }
 
-    public async Task<ScoreSubmitResult> SubmitScore(string userId, Replay replay)
+    public async Task<ScoreSubmitResult> ValidateAndSubmitReplay(string userId, Replay replay)
     {
+        // Check if reported score is negative (highly unlikely)
+        if (replay.Score < 0)
+            return ScoreSubmitResult.Invalid;
+
+        // Get user
         var user = await gameRepository.GetApplicationUser(userId);
 
+        // Check if seed was generated
+        if (user.Seed is null || user.SeedTimestamp is null)
+            return ScoreSubmitResult.Invalid;
+
+        // Check if submitted seed is equal to generated seed
+        if (replay.Seed != user.Seed)
+            return ScoreSubmitResult.Invalid;
+
+        // Check if inputs and seed will reproduce reported score
+        if (!(await Game.ValidateReplay(replay)))
+            return ScoreSubmitResult.Invalid;
+
+        // Everything checks out, create score and store in database
         var score = new Score
         {
             User = user,
@@ -52,9 +70,6 @@ public class GameService(GameRepository gameRepository)
             Timestamp = DateTime.UtcNow,
             ReplayData = replay
         };
-
-        if (score.Points < 0)
-            return ScoreSubmitResult.Failure;
 
         var currentHiScore = await gameRepository.GetHighScoreByUserId(user.Id);
 
@@ -71,5 +86,10 @@ public class GameService(GameRepository gameRepository)
     public async Task<List<Score>> GetTopScores(int amount)
     {
         return await gameRepository.GetTopScores(amount);
+    }
+
+    public async Task<int?> StartGameForUser(string userId)
+    {
+        return await gameRepository.StartGameForUser(userId);
     }
 }

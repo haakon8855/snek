@@ -11,12 +11,12 @@
 		<div>
 			@if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
 			{
-				<UIGrid />
+				<UIGrid/>
 			}
 			else
 			{
 				<div style="filter: blur(3px)">
-					<UIGridLoading />
+					<UIGridLoading/>
 				</div>
 				<div class=" position-absolute top-50 start-50">
 					<div class="spinner-border custom-spinner" role="status">

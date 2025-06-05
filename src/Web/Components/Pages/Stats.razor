@@ -144,15 +144,15 @@ else
             return minutes == 1 ? $"{minutes} minute ago" : $"{minutes} minutes ago";
         }
 
-        if (dateTime > DateTime.Now.Date)
+        if (dateTime > DateTime.UtcNow.Date)
         {
             var hours = (int)diff.TotalHours;
             return hours == 1 ? $"{hours} hour ago" : $"{hours} hours ago";
         }
 
-        if (dateTime > DateTime.Now.Date.AddDays(-1))
+        if (dateTime > DateTime.UtcNow.Date.AddDays(-1))
             return $"Yesterday {dateTime.ToShortTimeString()}";
-        if (dateTime > DateTime.Now.Date.AddDays(-6))
+        if (dateTime > DateTime.UtcNow.Date.AddDays(-6))
             return $"{dateTime.DayOfWeek.ToString()} {dateTime.ToShortTimeString()}";
 
         return dateTime.ToString(CultureInfo.CurrentCulture);

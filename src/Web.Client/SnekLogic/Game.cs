@@ -27,8 +27,8 @@ public class Game
 {
     public int Score;
     public int Step;
-    private static readonly (int height, int width) Size = (20, 30);
-    public CellsType[][] Grid = new CellsType[Size.height][];
+    public static readonly (int Height, int Width) Size = (20, 30);
+    public CellsType[][] Grid = new CellsType[Size.Height][];
 
     private readonly List<(int y, int x)> _snek = [];
     private (int y, int x) _food;
@@ -49,13 +49,19 @@ public class Game
         InitDemoSnake();
     }
 
-    public Game(IHttpClientFactory httpClientFactory)
+    private Game(IHttpClientFactory httpClientFactory)
     {
         _httpClient = httpClientFactory.CreateClient("ServerApi");
-        Init();
     }
 
-    public void Init(int seed = 0)
+    public static async Task<Game> CreateAsync(IHttpClientFactory httpClientFactory)
+    {
+        var instance = new Game(httpClientFactory);
+        await instance.Init();
+        return instance;
+    }
+
+    public async Task Init(int seed = 0)
     {
         Score = 0;
         Step = 0;
@@ -64,20 +70,29 @@ public class Game
         // Init replay
         _replay = new Replay
         {
-            // Set random seed
             Seed = seed
         };
 
         if (_replay.Seed == 0)
         {
-            _replay.Seed = _random.Next();
+            // Get random seed from server
+            if (_httpClient is null)
+                return;
+            var response = await _httpClient.PostAsync($"api/game/start", new StringContent(""));
+            if (response.StatusCode != HttpStatusCode.OK)
+                return;
+            var json = await response.Content.ReadAsStringAsync();
+            var seedDto = JsonSerializer.Deserialize<SeedDTO>(json);
+            if (seedDto is null)
+                return;
+            _replay.Seed = seedDto.Seed;
         }
 
         _random = new Random(_replay.Seed);
 
-        for (var i = 0; i < Size.height; i++)
+        for (var i = 0; i < Size.Height; i++)
         {
-            Grid[i] = new CellsType[Size.width];
+            Grid[i] = new CellsType[Size.Width];
         }
 
         var startCoords = GetRandomCoords();
@@ -246,8 +261,8 @@ public class Game
 
     private static bool CheckWallCollision((int y, int x) coords)
     {
-        var yValid = coords.y >= 0 && coords.y < Size.height;
-        var xValid = coords.x >= 0 && coords.x < Size.width;
+        var yValid = coords.y >= 0 && coords.y < Size.Height;
+        var xValid = coords.x >= 0 && coords.x < Size.Width;
         return !yValid || !xValid;
     }
 
@@ -283,8 +298,8 @@ public class Game
 
     private (int y, int x) GetRandomCoords()
     {
-        var y = _random.Next(0, Size.height);
-        var x = _random.Next(0, Size.width);
+        var y = _random.Next(0, Size.Height);
+        var x = _random.Next(0, Size.Width);
         return (y, x);
     }
 
@@ -294,7 +309,7 @@ public class Game
         var httpContent = Jsonify(_replay);
         if (_httpClient is null)
             return HttpStatusCode.InternalServerError;
-        var response = await _httpClient.PostAsync($"api/game/score", httpContent);
+        var response = await _httpClient.PostAsync($"api/score", httpContent);
         return response.StatusCode;
     }
 
@@ -309,10 +324,10 @@ public class Game
         return JsonContent.Create(new HighScoreDTO { Replay = replay, Checksum = hashedString });
     }
 
-    public static bool VerifyReplay(Replay replay)
+    public static async Task<bool> ValidateReplay(Replay replay)
     {
         var game = new Game();
-        game.Init(replay.Seed);
+        await game.Init(replay.Seed);
 
         var validState = true;
 
@@ -345,10 +360,10 @@ public class Game
 
 
         // Clear grid
-        Grid = new CellsType[Size.height][];
-        for (var i = 0; i < Size.height; i++)
+        Grid = new CellsType[Size.Height][];
+        for (var i = 0; i < Size.Height; i++)
         {
-            Grid[i] = new CellsType[Size.width];
+            Grid[i] = new CellsType[Size.Width];
         }
 
         Grid[_snek.First().y][_snek.First().x] = CellsType.SnekHead;
