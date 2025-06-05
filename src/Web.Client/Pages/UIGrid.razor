@@ -95,7 +95,7 @@ else
 
 @code {
 	private Game? _game;
-	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(75));
+	private readonly PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(Game.TickLength));
 	private bool _gameOver = false;
 	private bool _timerStarted = false;
 	private bool _enableMusic = false;

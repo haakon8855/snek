@@ -16,7 +16,7 @@
 				             disabled="@_jumpInputIsDisabled"/>
 				<label for="toggleDoubleSpeed" class="fw-bold px-2" style="display: flex; align-items: center"
 				       title="Snabbsnek">
-					@if (_enableDoubleSpeed)
+					@if (_enableFastReplaySpeed)
 					{
 						<span class="icon icon-fast-forward-fill"></span>
 					}
@@ -25,9 +25,9 @@
 						<span class="icon icon-fast-forward"></span>
 					}
 				</label>
-				<InputCheckbox id="toggleDoubleSpeed" Value="_enableDoubleSpeed"
+				<InputCheckbox id="toggleDoubleSpeed" Value="_enableFastReplaySpeed"
 				               ValueChanged="(bool value) => DoubleSpeedChanged(value)"
-				               ValueExpression="() => _enableDoubleSpeed" hidden/>
+				               ValueExpression="() => _enableFastReplaySpeed" hidden/>
 			</div>
 		</div>
 		<div style="background-color: black;">
@@ -54,9 +54,9 @@
 	[Parameter] public int StartPoints { get; set; }
 
 	private Game? _game;
-	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(75));
+	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(Game.TickLength));
 	private Replay? _replay;
-	private bool _enableDoubleSpeed = false;
+	private bool _enableFastReplaySpeed = false;
 	private bool _enableDoubleSpeedChanged = false;
 	private int _jumpToPoints = 0;
 	private bool _jumpInputIsDisabled = false;
@@ -105,8 +105,8 @@
 		{
 			if (_enableDoubleSpeedChanged)
 			{
-				var delay = _enableDoubleSpeed ? 30 : 75;
-				_timer = new(TimeSpan.FromMilliseconds(delay));
+				var delay = _enableFastReplaySpeed ? 30 : Game.TickLength;
+				_timer = new PeriodicTimer(TimeSpan.FromMilliseconds(delay));
 				_enableDoubleSpeedChanged = false;
 			}
 
@@ -151,7 +151,7 @@
 
 	private void DoubleSpeedChanged(bool value)
 	{
-		_enableDoubleSpeed = value;
+		_enableFastReplaySpeed = value;
 		_enableDoubleSpeedChanged = true;
 	}
 

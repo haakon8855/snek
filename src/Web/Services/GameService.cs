@@ -57,6 +57,13 @@ public class GameService(GameRepository gameRepository)
         if (replay.Seed != user.Seed)
             return ScoreSubmitResult.Invalid;
 
+        // Check if time since seed was generated is long enough
+        var lastInputTick = replay.Inputs.Keys.Max();
+        var seedAge = DateTime.UtcNow - (user.SeedTimestamp ?? DateTime.UtcNow);
+        var minimumPossibleDurationMillis = lastInputTick * Game.TickLength;
+        if (seedAge.TotalMilliseconds < minimumPossibleDurationMillis)
+            return ScoreSubmitResult.Invalid;
+
         // Check if inputs and seed will reproduce reported score
         if (!(await Game.ValidateReplay(replay)))
             return ScoreSubmitResult.Invalid;

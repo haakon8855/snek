@@ -27,7 +27,10 @@ public class Game
 {
     public int Score;
     public int Step;
+    
+    public const int TickLength = 75; // Length of one game tick (ms)
     public static readonly (int Height, int Width) Size = (20, 30);
+        
     public CellsType[][] Grid = new CellsType[Size.Height][];
 
     private readonly List<(int y, int x)> _snek = [];
