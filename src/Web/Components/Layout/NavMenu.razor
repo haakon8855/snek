@@ -66,12 +66,16 @@
     </nav>
 
     <div class="position-absolute start-0 bottom-0 m-2 text-white-50" style="font-size: 1rem;">
-        <div class="d-flex align-items-center mb-1" title="Build version">
+        <a href="@_tagLink"
+           target="_blank"
+           class="d-flex align-items-center text-white-50 text-decoration-none mb-1"
+           title="View tagged commit on GitHub"
+        >
             <i class="bi bi-tag-fill me-1"></i>
             <span class="align-middle text-white-50 font-monospace">
                 @_appVersion
             </span>
-        </div>
+        </a>
         <a href="https://github.com/haakon8855/snek"
            target="_blank"
            class="d-flex align-items-center text-white-50 text-decoration-none"
@@ -86,15 +90,17 @@
 
 
 @code {
-    
+
     private string? _currentUrl;
     private string? _appVersion;
+    private string? _tagLink;
 
     protected override void OnInitialized()
     {
         _currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
         _appVersion = string.IsNullOrWhiteSpace(Configuration?["AppVersion"]) ? "localhost" : Configuration["AppVersion"];
+        _tagLink = string.IsNullOrWhiteSpace(Configuration?["AppVersion"]) ? "" : $"https://github.com/haakon8855/snek/releases/tag/{_appVersion}";
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
