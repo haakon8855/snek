@@ -19,7 +19,7 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
             .Include(u => u.HighScore)
             .FirstOrDefaultAsync(u => u.Id == userId);
         var userScore = user?.HighScore?.Points;
-        
+
         if (userScore is null)
             return null;
 
@@ -160,5 +160,23 @@ public class GameRepository(ApplicationDbContext applicationDbContext)
             .OrderByDescending(score => score.Timestamp)
             .Take(amount)
             .ToListAsync();
+    }
+
+    public async Task<int?> StartGameForUser(string userId)
+    {
+        var user = await applicationDbContext.Users
+            .Include(u => u.HighScore)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+            return null;
+
+        // Create a new seed and set the seed timestamp
+        user.Seed = Random.Shared.Next();
+        user.SeedTimestamp = DateTime.UtcNow;
+        
+        await applicationDbContext.SaveChangesAsync();
+
+        return user.Seed;
     }
 }

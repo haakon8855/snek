@@ -40,6 +40,7 @@ jobs:
           minor_pattern: "(MINOR)"
           bump_each_commit: false
           enable_prerelease_mode: false
+          search_commit_body: true
       
       - name: Create Git tag
         run: |

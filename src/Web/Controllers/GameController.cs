@@ -1,52 +1,29 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Client.SnekLogic;
-using Web.Models;
 using Web.Services;
-using System.Security.Claims;
 
 namespace Web.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class GameController(GameService gameService) : ControllerBase
+public class GameController(GameService gameService, ILogger<GameController> logger) : ControllerBase
 {
-    [HttpPost("score")]
-    public async Task<IResult> Score([FromBody] HighScoreDTO points)
+    [HttpPost("start")]
+    public async Task<IResult> StartGame()
     {
         var userId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        
+        logger.LogInformation($"Generating seed and timestamp for user {userId}");
 
-        if (points.Replay is null)
-            return Results.BadRequest();
+        var seed = await gameService.StartGameForUser(userId) ?? 0;
+        
+        if (seed == 0)
+            return Results.NotFound("User does not exist");
 
-        var checkSum = await Game.Jsonify(points.Replay).ReadFromJsonAsync<HighScoreDTO>();
-
-        if (checkSum?.Checksum != points.Checksum)
-            return Results.BadRequest();
-
-        if (!Game.VerifyReplay(points.Replay))
-            return Results.BadRequest();
-
-        ScoreSubmitResult result = await gameService.SubmitScore(userId, points.Replay);
-
-        return result switch
-        {
-            ScoreSubmitResult.HighScore => Results.Created(),
-            ScoreSubmitResult.NotHighScore => Results.Ok(),
-            ScoreSubmitResult.Failure => Results.BadRequest("Could not save high score"),
-            _ => Results.BadRequest("Request parameters were ill formed")
-        };
-    }
-
-    [HttpGet("score/{id:int}")]
-    public async Task<IResult> Score(int id)
-    {
-        var score = await gameService.GetReplayByScoreId(id);
-
-        if (score is null)
-            return Results.BadRequest();
-
-        return Results.Ok(score);
+        var responseBody = new SeedDTO { Seed = seed };
+        return Results.Ok(responseBody);
     }
 }

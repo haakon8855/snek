@@ -1,13 +1,13 @@
 ﻿@rendermode InteractiveServer
-@inject IConfiguration Configuration;
+
 <div>
 	<h2>Snekpoeng: @_game.Score</h2>
 
 	<div style="background-color: black;">
-		@for (int i = 0; i < _game.Grid.Length; i++)
+		@for (var i = 0; i < Game.Size.Height; i++)
 		{
 			<div class="snek-row">
-				@for (int j = 0; j < _game.Grid[0].Length; j++)
+				@for (var j = 0; j < Game.Size.Width; j++)
 				{
 					<Cell
 						Row="@i"
@@ -24,5 +24,5 @@
 @code {
 
 	private Game _game = new();
-	
+
 }

@@ -1,7 +1,6 @@
 ﻿@using System.Net
 
 @inject IHttpClientFactory HttpClientFactory;
-@inject NavigationManager NavManager;
 @rendermode InteractiveWebAssembly
 
 <div>
@@ -11,11 +10,12 @@
 			<h2>Snekpoeng: @_game.Score</h2>
 			<div class="p-2" style="display: flex; justify-content: space-between; align-items: center">
 				<InputNumber Value="_jumpToPoints"
-				             ValueChanged="(int value) => JumpToPoints(value)"
+				             ValueChanged="async (int value) => await JumpToPoints(value)"
 				             ValueExpression="() => _jumpToPoints"
 				             class="form-control"
 				             disabled="@_jumpInputIsDisabled"/>
-				<label for="toggleDoubleSpeed" class="fw-bold px-2" style="display: flex; align-items: center" title="Snabbsnek">
+				<label for="toggleDoubleSpeed" class="fw-bold px-2" style="display: flex; align-items: center"
+				       title="Snabbsnek">
 					@if (_enableDoubleSpeed)
 					{
 						<span class="icon icon-fast-forward-fill"></span>
@@ -55,10 +55,9 @@
 
 	private Game? _game;
 	private PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(75));
-	private bool _timerStarted = false;
-	private Replay? _replay = null;
+	private Replay? _replay;
 	private bool _enableDoubleSpeed = false;
-	private bool _enableDoubleSpeedChanged;
+	private bool _enableDoubleSpeedChanged = false;
 	private int _jumpToPoints = 0;
 	private bool _jumpInputIsDisabled = false;
 
@@ -71,7 +70,7 @@
 		var httpClient = HttpClientFactory.CreateClient("ServerApi");
 		try
 		{
-			var response = await httpClient.GetAsync($"api/Game/score/{Id}");
+			var response = await httpClient.GetAsync($"api/score/{Id}");
 			if (response.StatusCode != HttpStatusCode.OK)
 				return;
 
@@ -89,7 +88,7 @@
 		}
 
 		var game = new Game();
-		game.Init(_replay.Seed);
+		await game.Init(_replay.Seed);
 		_game = SimulateUntilPointsReached(game, StartPoints);
 		StateHasChanged();
 
@@ -156,7 +155,7 @@
 		_enableDoubleSpeedChanged = true;
 	}
 
-	private void JumpToPoints(int value)
+	private async Task JumpToPoints(int value)
 	{
 		_jumpToPoints = value;
 		if (_jumpToPoints < 0)
@@ -164,7 +163,7 @@
 		if (_replay is null)
 			return;
 		var game = new Game();
-		game.Init(_replay.Seed);
+		await game.Init(_replay.Seed);
 		_game = SimulateUntilPointsReached(game, _jumpToPoints);
 		StateHasChanged();
 	}
